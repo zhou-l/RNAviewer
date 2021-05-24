@@ -85,11 +85,19 @@ function drawBodyView(data, className, divName, width, height, margin)
     var xscale = 0.65*width/g_orgBodyImgWidth;
     var yscale = height/g_orgBodyImgHeight;
     d3.queue()
-    .defer(d3.csv, "./data/pathPalmSole.txt")
-    .defer(d3.csv, "./data/pathExtremities.txt")
-    .await(function(error, data1, data2) {
+    .defer(d3.csv, "./data/pathPalmSole1.txt")
+    .defer(d3.csv, "./data/pathPalmSole2.txt")
+    .defer(d3.csv, "./data/pathPalmSole3.txt")
+    .defer(d3.csv, "./data/pathPalmSole4.txt")
+    .defer(d3.csv, "./data/pathExtremities1.txt")
+    .defer(d3.csv, "./data/pathExtremities2.txt")
+    .defer(d3.csv, "./data/pathExtremities3.txt")
+    .defer(d3.csv, "./data/pathHeadNeck.txt")
+    .defer(d3.csv, "./data/pathPerinaeum.txt")
+    .defer(d3.csv, "./data/pathTorso.txt")
+    .await(function(error, data1, data2, data3, data4, data5, data6, data7, data8, data9, data10) {
     if (error) throw error;
-        var bodyPart1 = nodePartSilhouette
+        var bodyPart1_1 = nodePartSilhouette
         .append('path')
         .attr("id","bodyPart1")
         .attr("class","bodyOutline")
@@ -111,28 +119,200 @@ function drawBodyView(data, className, divName, width, height, margin)
         .style("opacity","0.5")
          .attr("transform","translate("+ 70 +","+0+")");
 
-         var bodyPart2 = nodePartSilhouette
-         .append('path')
-         .attr("id","bodyPart2")
-         .attr("class","bodyOutline")
-         .attr("d", function(){
-             var pathStr = "M ";
- 
-             for(var i = 0; i < data2.length; i++)
-             {
-                 if(i > 0)
-                     pathStr += "L " + data2[i].x * xscale + " " + data2[i].y * yscale+" ";
-                 else
-                     pathStr += data2[i].x * xscale + " " + data2[i].y * yscale +" ";
-                 if(i == data2.length-1)
-                     pathStr += "z";
-             }
-             return pathStr;
-         })
-         .style("fill", function(){return g_exprValColorMap(0.4);})
-         .style("opacity","0.5")
-          .attr("transform","translate("+ 70 +","+0+")");
+        var bodyPart1_2 = nodePartSilhouette
+            .append('path')
+            .attr("id", "bodyPart1")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+
+                for (var i = 0; i < data2.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data2[i].x * xscale + " " + data2[i].y * yscale + " ";
+                    else
+                        pathStr += data2[i].x * xscale + " " + data2[i].y * yscale + " ";
+                    if (i == data2.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+
+            var bodyPart1_3 = nodePartSilhouette
+            .append('path')
+            .attr("id", "bodyPart1")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data3.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data3[i].x * xscale + " " + data3[i].y * yscale + " ";
+                    else
+                        pathStr += data3[i].x * xscale + " " + data3[i].y * yscale + " ";
+                    if (i == data3.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+
+            var bodyPart1_4 = nodePartSilhouette
+            .append('path')
+            .attr("id", "bodyPart1")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data4.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data4[i].x * xscale + " " + data4[i].y * yscale + " ";
+                    else
+                        pathStr += data4[i].x * xscale + " " + data4[i].y * yscale + " ";
+                    if (i == data4.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+
+
+            var bodyPart2_1 = nodePartSilhouette
+            .append('path')
+            .attr("id", "bodyPart2")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data5.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data5[i].x * xscale + " " + data5[i].y * yscale + " ";
+                    else
+                        pathStr += data5[i].x * xscale + " " + data5[i].y * yscale + " ";
+                    if (i == data5.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+
+            
+            var bodyPart2_2 = nodePartSilhouette
+            .append('path')
+            .attr("id", "bodyPart2")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data6.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data6[i].x * xscale + " " + data6[i].y * yscale + " ";
+                    else
+                        pathStr += data6[i].x * xscale + " " + data6[i].y * yscale + " ";
+                    if (i == data6.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+
+            
+            var bodyPart2_3 = nodePartSilhouette
+            .append('path')
+            .attr("id", "bodyPart2")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data7.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data7[i].x * xscale + " " + data7[i].y * yscale + " ";
+                    else
+                        pathStr += data7[i].x * xscale + " " + data7[i].y * yscale + " ";
+                    if (i == data7.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+
+            var bodyPart3 = nodePartSilhouette
+            .append('path')
+            .attr("id", "bodyPart3")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data8.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data8[i].x * xscale + " " + data8[i].y * yscale + " ";
+                    else
+                        pathStr += data8[i].x * xscale + " " + data8[i].y * yscale + " ";
+                    if (i == data8.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+
+            var bodyPart4 = nodePartSilhouette
+            .append('path')
+            .attr("id", "bodyPart4")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data9.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data9[i].x * xscale + " " + data9[i].y * yscale + " ";
+                    else
+                        pathStr += data9[i].x * xscale + " " + data9[i].y * yscale + " ";
+                    if (i == data9.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+
+            var bodyPart5 = nodePartSilhouette
+            .append('path')
+            .attr("id", "bodyPart5")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data10.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data10[i].x * xscale + " " + data10[i].y * yscale + " ";
+                    else
+                        pathStr += data10[i].x * xscale + " " + data10[i].y * yscale + " ";
+                    if (i == data10.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 70 + "," + 0 + ")");
     });
+
+
 
     // for(var s = 0; s < g_pathFiles.length; s++){
     //     console.log(s);
@@ -166,9 +346,7 @@ function drawBodyView(data, className, divName, width, height, margin)
     //         .style("opacity","0.5")
     //          .attr("transform","translate("+ 70 +","+0+")")
     //         // .attr("transform","translate("+width/2+","+height/2+")");
-        
     //     })
-
     // }
 
     svg_img.attr('height', height)

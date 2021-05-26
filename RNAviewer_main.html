@@ -133,10 +133,13 @@ table {
 		
 
 		<div class="row">
-			<div id="rnaSearchBox" class=" w3-container w3-cell column" style="width:500px;height:600px;">
+			<div id="rnaInfoArea" class=" w3-container w3-cell column" style="width:500px;height:600px;">
 
-                <textarea id="searchBox" name="searchBox" placeholder="search a RNA..." style="width:500px;position:absolute;top:150px;"></textarea>
-                <select id="selectButton" ></select>
+                <textarea id="rnaSearchBox" placeholder="search an RNA..." style="width:400px;position:absolute;top:150px;"></textarea>
+                <button id="rnaSearchButton" style="position:relative;top:150px;left:400px">Try it</button>
+				<select id="rnaDropbox" style="width:500px;position:relative;top:240px;"></select>
+
+				<div id = "rnaInfo" style="width:500px; height:400px"></div>
 
             </div>
             <div id="bodyView" class=" w3-container w3-cell column" style="width:400px;height:600px;"></div>

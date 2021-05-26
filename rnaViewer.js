@@ -24,8 +24,9 @@ var g_pathFiles = ['./data/pathHeadNeck.txt','./data/pathLegs.txt','./data/pathT
 var g_sgwidth = 1400;
 var g_sgLegendWidth = 100;
 var g_sgheight = 300;
-
-
+// selected row of the data
+var g_selectedRow = 0;
+var g_selectedData = null;
 // // colormap steps for colors
 // [0-3）
 // [3-6）
@@ -54,16 +55,18 @@ function drawBodyView(data, className, divName, width, height, margin)
 
 
     var parts = [1, 2, 3, 4];
-    var nodeParts = svg.selectAll(".bodyParts")
-    .data(parts)
+
+    var testVal = [0.11, 5, 8, 20, 30, 80, 200, 599];
+    var nodeParts = svg.selectAll(".legend")
+    .data(testVal)
     .enter()
     .append("circle")
     .attr("class", "bodyParts")
     .attr("id",function(d,i){return i;})
     .attr("r",10)
-    .attr("cx", function(d,i){return 20 + 25*i;})
+    .attr("cx", function(d,i){return width;})
     .attr("cy", function(d,i){return 20 + 25*i;})
-    .style("fill", function(d,i){return g_exprValColorMap(i/parts.length)})
+    .style("fill", function(d,i){return g_exprValColorMap(d)})
     ;
 
 
@@ -75,6 +78,9 @@ function drawBodyView(data, className, divName, width, height, margin)
     var allPathData = [];
     var xscale = 0.65*width/g_orgBodyImgWidth;
     var yscale = height/g_orgBodyImgHeight;
+
+    console.log(g_tmpMeanVal[g_selectedRow]);
+
     d3.queue()
     .defer(d3.csv, "./data/pathPalmSole1.txt")
     .defer(d3.csv, "./data/pathPalmSole2.txt")
@@ -90,7 +96,7 @@ function drawBodyView(data, className, divName, width, height, margin)
     if (error) throw error;
         var bodyPart1_1 = nodePartSilhouette
         .append('path')
-        .attr("id","bodyPart1")
+        .attr("id","pathPalmSole")
         .attr("class","bodyOutline")
         .attr("d", function(){
             var pathStr = "M ";
@@ -106,13 +112,17 @@ function drawBodyView(data, className, divName, width, height, margin)
             }
             return pathStr;
         })
-        .style("fill", function(){return g_exprValColorMap(0.2);})
+        .style("fill", function () {
+            if(g_selectedRow >= 0 && g_selectedRow < g_tmpMeanVal.length) 
+                return g_exprValColorMap(+g_tmpMeanVal[g_selectedRow].PalmSole);
+            else
+                return g_exprValColorMap(0); })
         .style("opacity","0.5")
          .attr("transform","translate("+ 70 +","+0+")");
 
         var bodyPart1_2 = nodePartSilhouette
             .append('path')
-            .attr("id", "bodyPart1")
+            .attr("id", "pathPalmSole")
             .attr("class", "bodyOutline")
             .attr("d", function () {
                 var pathStr = "M ";
@@ -127,13 +137,17 @@ function drawBodyView(data, className, divName, width, height, margin)
                 }
                 return pathStr;
             })
-            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("fill", function () {
+                if(g_selectedRow >= 0 && g_selectedRow < g_tmpMeanVal.length) 
+                    return g_exprValColorMap(+g_tmpMeanVal[g_selectedRow].PalmSole);
+                else
+                    return g_exprValColorMap(0); })
             .style("opacity", "0.5")
             .attr("transform", "translate(" + 70 + "," + 0 + ")");
 
             var bodyPart1_3 = nodePartSilhouette
             .append('path')
-            .attr("id", "bodyPart1")
+            .attr("id", "pathPalmSole")
             .attr("class", "bodyOutline")
             .attr("d", function () {
                 var pathStr = "M ";
@@ -148,13 +162,22 @@ function drawBodyView(data, className, divName, width, height, margin)
                 }
                 return pathStr;
             })
-            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("fill", function () {
+                if(g_selectedRow >= 0 && g_selectedRow < g_tmpMeanVal.length) 
+                {
+                    var val = +g_tmpMeanVal[g_selectedRow].PalmSole;
+                    console.log(val);
+                    return g_exprValColorMap(val);
+                }
+
+                else
+                    return g_exprValColorMap(0); })
             .style("opacity", "0.5")
             .attr("transform", "translate(" + 70 + "," + 0 + ")");
 
             var bodyPart1_4 = nodePartSilhouette
             .append('path')
-            .attr("id", "bodyPart1")
+            .attr("id", "pathPalmSole")
             .attr("class", "bodyOutline")
             .attr("d", function () {
                 var pathStr = "M ";
@@ -169,14 +192,18 @@ function drawBodyView(data, className, divName, width, height, margin)
                 }
                 return pathStr;
             })
-            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("fill", function () {
+                if(g_selectedRow >= 0 && g_selectedRow < g_tmpMeanVal.length) 
+                    return g_exprValColorMap(+g_tmpMeanVal[g_selectedRow].PalmSole);
+                else
+                    return g_exprValColorMap(0); })
             .style("opacity", "0.5")
             .attr("transform", "translate(" + 70 + "," + 0 + ")");
 
 
             var bodyPart2_1 = nodePartSilhouette
             .append('path')
-            .attr("id", "bodyPart2")
+            .attr("id", "pathExtremities")
             .attr("class", "bodyOutline")
             .attr("d", function () {
                 var pathStr = "M ";
@@ -191,14 +218,18 @@ function drawBodyView(data, className, divName, width, height, margin)
                 }
                 return pathStr;
             })
-            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("fill", function () {
+                if(g_selectedRow >= 0 && g_selectedRow < g_tmpMeanVal.length) 
+                    return g_exprValColorMap(+g_tmpMeanVal[g_selectedRow].Extremities);
+                else
+                    return g_exprValColorMap(0); })
             .style("opacity", "0.5")
             .attr("transform", "translate(" + 70 + "," + 0 + ")");
 
             
             var bodyPart2_2 = nodePartSilhouette
             .append('path')
-            .attr("id", "bodyPart2")
+            .attr("id", "pathExtremities")
             .attr("class", "bodyOutline")
             .attr("d", function () {
                 var pathStr = "M ";
@@ -220,7 +251,7 @@ function drawBodyView(data, className, divName, width, height, margin)
             
             var bodyPart2_3 = nodePartSilhouette
             .append('path')
-            .attr("id", "bodyPart2")
+            .attr("id", "pathExtremities")
             .attr("class", "bodyOutline")
             .attr("d", function () {
                 var pathStr = "M ";
@@ -241,7 +272,7 @@ function drawBodyView(data, className, divName, width, height, margin)
 
             var bodyPart3 = nodePartSilhouette
             .append('path')
-            .attr("id", "bodyPart3")
+            .attr("id", "pathHeadNeck")
             .attr("class", "bodyOutline")
             .attr("d", function () {
                 var pathStr = "M ";
@@ -262,7 +293,7 @@ function drawBodyView(data, className, divName, width, height, margin)
 
             var bodyPart4 = nodePartSilhouette
             .append('path')
-            .attr("id", "bodyPart4")
+            .attr("id", "pathPerinaeum")
             .attr("class", "bodyOutline")
             .attr("d", function () {
                 var pathStr = "M ";
@@ -283,7 +314,7 @@ function drawBodyView(data, className, divName, width, height, margin)
 
             var bodyPart5 = nodePartSilhouette
             .append('path')
-            .attr("id", "bodyPart5")
+            .attr("id", "pathBody")
             .attr("class", "bodyOutline")
             .attr("d", function () {
                 var pathStr = "M ";
@@ -301,44 +332,10 @@ function drawBodyView(data, className, divName, width, height, margin)
             .style("fill", function () { return g_exprValColorMap(0.4); })
             .style("opacity", "0.5")
             .attr("transform", "translate(" + 70 + "," + 0 + ")");
+
+
+            redrawAll();
     });
-
-
-
-    // for(var s = 0; s < g_pathFiles.length; s++){
-    //     console.log(s);
-    //     d3.csv(g_pathFiles[s], function(data){
-    //         data.forEach(d => {
-    //             d.x = +d.x;
-    //             d.y = +d.y;
-    //         });
-    //         allPathData.push(data);
-    //         var xscale = 0.65*width/g_orgBodyImgWidth; // unclear why xscale is not correct???
-    //         var yscale = height/g_orgBodyImgHeight;
-    //         // set path
-
-    //         nodePartSilhouette.append('path')
-    //         .attr("class","bodyOutline")
-    //         .attr("d", function(){
-    //             var pathStr = "M ";
-
-    //             for(var i = 0; i < data.length; i++)
-    //             {
-    //                 if(i > 0)
-    //                     pathStr += "L " + data[i].x * xscale + " " + data[i].y * yscale+" ";
-    //                 else
-    //                     pathStr += data[i].x * xscale + " " + data[i].y * yscale +" ";
-    //                 if(i == data.length-1)
-    //                     pathStr += "z";
-    //             }
-    //             return pathStr;
-    //         })
-    //         .style("fill", function(d,i){return g_exprValColorMap(0.2 * s)})
-    //         .style("opacity","0.5")
-    //          .attr("transform","translate("+ 70 +","+0+")")
-    //         // .attr("transform","translate("+width/2+","+height/2+")");
-    //     })
-    // }
 
     svg_img.attr('height', height)
         .attr('width', width)
@@ -347,23 +344,46 @@ function drawBodyView(data, className, divName, width, height, margin)
         .style('stroke', '#AAA')
         .style("opacity",0.1)
         ;
+
+ 
     return svg_img;
 }
 
 function setupSearchView(g_tmpMeanVal, className, divName, width, height, margin)
 {
     
-    var svg = d3.select(divName)
-    .append("svg")
-    .attr('class', className)
-    .attr('id', className)
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    // var svg = d3.select(divName)
+    // .append("svg")
+    // .attr('class', className)
+    // .attr('id', className)
+    // .attr("width", width + margin.left + margin.right)
+    // .attr("height", height + margin.top + margin.bottom)
+    // .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    return svg;
-
+    // return svg;
+    d3.select("#rnaSearchButton")
+    .on("click", function(){doSearch();})
 }
+
+
+function doSearch() {
+    var txtName = document.getElementById("rnaSearchBox");
+    console.log(txtName.value);
+    // do a simple traversal, for now
+    for(var i = 0; i < g_tmpMeanVal.length; i++)
+    {
+        if(g_tmpMeanVal[i].Symbol.toLowerCase() === txtName.value.toLowerCase())
+        {
+            if(i != g_selectedRow){
+                g_selectedRow = i;
+                g_selectedData = g_tmpMeanVal[g_selectedRow];
+                console.log("found!");
+                redrawAll();
+            }
+            return;
+        }
+    }
+  }
 
 function drawDotplots()
 {
@@ -373,16 +393,16 @@ function drawDotplots()
 
 function drawBarcharts(data, selectedRow, className, divName, width, height, margin)
 {
-// append the svg object to the body of the page
-var svg = d3.select(divName)
-  .append("svg")
-  .attr('class', className)
-  .attr('id', className)
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
+    // append the svg object to the body of the page
+    var svg = d3.select(divName)
+        .append("svg")
+        .attr('class', className)
+        .attr('id', className)
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
     var keys = data.columns.slice(1);
     console.log(keys);
     var selectedData = data[selectedRow];
@@ -395,7 +415,7 @@ var svg = d3.select(divName)
         .domain(keys)
         .padding(0.2);
     svg.append("g")
-        .attr("transform", "translate(0," + (height-margin.bottom) + ")")
+        .attr("transform", "translate(0," + (height - margin.bottom) + ")")
         .call(d3.axisBottom(x))
         .selectAll("text")
         //  .attr("transform", "translate(10,0)")
@@ -403,7 +423,7 @@ var svg = d3.select(divName)
     // convert data row to keys
     var convertedData = [];
     for (var i = 0; i < keys.length; i++) {
-        var item = {key: keys[i], val: +selectedData[keys[i]]};
+        var item = { key: keys[i], val: +selectedData[keys[i]] };
         // item.key = keys[i];
         // item.val = +selectedData[keys[i]];
         convertedData.push(item);
@@ -413,40 +433,91 @@ var svg = d3.select(divName)
         // .domain([0, d3.max(selectedData, function(d){return d3.max(d.val);})]).nice()
         .range([height, 0])
         .rangeRound([height - margin.bottom, margin.top]);
-    y.domain([0, d3.max(convertedData, function(d){return d.val;})]).nice();    
+    y.domain([0, d3.max(convertedData, function (d) { return d.val; })]).nice();
     svg.append("g")
-        .attr("transform", "translate("+margin.left+",0)")
+        .attr("transform", "translate(" + margin.left + ",0)")
         .call(d3.axisLeft(y));
 
     // Bars
-    
+
     svg.selectAll("mybar")
         .data(convertedData)
         .enter()
         .append("rect")
         .attr("class", "mybar")
-        .attr("x", function (d) { 
-            return x(d.key); })
-        .attr("y", function (d) { 
+        .attr("x", function (d) {
+            return x(d.key);
+        })
+        .attr("y", function (d) {
             console.log(y(d.val));
-            return y(d.val); })
+            return y(d.val);
+        })
         .attr("width", x.bandwidth())
         .attr("height", function (d) { return y(0) - y(d.val); })
-        .attr("fill", "#69b3a2")
+        .attr("fill", "steelblue")
 
 }
 
 // Update views with different search terms
 function redrawAll()
 {
+    if(g_selectedRow < 0 || g_selectedRow >= g_tmpMeanVal.length)
+    return;
 
+    // update the body view
+   const bodyView = d3.select("#bodyView");
+   var partHeadNeck = bodyView.selectAll("#pathHeadNeck")
+   .style("fill", function(){
+       var val = g_tmpMeanVal[g_selectedRow].HeadNeck;
+       return g_exprValColorMap(val);
+   });
+
+   var partExtremities = bodyView.selectAll("#pathExtremities")
+   .style("fill", function(){
+       var val = g_tmpMeanVal[g_selectedRow].Extremities;
+       return g_exprValColorMap(val);
+   });
+
+   var partPerinaeum = bodyView.selectAll("#pathPerinaeum")
+   .style("fill", function(){
+       var val = g_tmpMeanVal[g_selectedRow].Perinaeum;
+       return g_exprValColorMap(val);
+   });
+
+   var partBody = bodyView.selectAll("#pathBody")
+   .style("fill", function(){
+       var val = g_tmpMeanVal[g_selectedRow].Body;
+       return g_exprValColorMap(val);
+   });
+
+   var partPalmSole = bodyView.selectAll("#pathPalmSole")
+   .style("fill", function(){
+       var val = g_tmpMeanVal[g_selectedRow].PalmSole;
+       return g_exprValColorMap(val);
+   });
+
+   // update the bar charts
+   d3.select("#barchart").remove();
+   drawBarcharts(g_tmpMeanVal, g_selectedRow, "barchart", "#dotplotView", g_dpwidth, g_dpheight, g_margin)
 }
+
+function exprValColormap(){
+    var colormap = d3.scaleThreshold()
+    .domain([0,3,6,11,26,51,101,501,1000000])
+    .range( d3.schemeYlOrRd[9]);
+    return colormap;
+}
+
+
 
 function rnaViewerMain()
 {
     // g_exprValColorMap = d3.scaleOrdinal(d3.schemeYlOrRd[5]);
-    g_exprValColorMap = d3.scaleSequential(d3.interpolateYlOrRd);
-    // 0. set up views
+    // g_exprValColorMap = d3.scaleSequential(d3.interpolateYlOrRd);
+
+    g_exprValColorMap = exprValColormap();
+    g_selectedRow = 6;
+    // 0. set up views  
     // drawBodyView(g_tmpMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
     // 0.load data
     d3.csv("./data/tpm_meanVal.csv", function(data){
@@ -465,8 +536,18 @@ function rnaViewerMain()
 
         // 2. setup search box
         setupSearchView(g_tmpMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
+        // 2.1 setup drop box
+        // d3.select("#rnaDropbox")
+        // .selectAll('rnaOptions')
+        // .data(g_tmpMeanVal)
+        // .enter()
+        // .text(function (d) { return d.Symbol; }) // text showed in the menu
+        // .attr("value", function (d,i) { return i; }) // corresponding value returned by the button
+        // .property("selected", function(d){ return d.Symbol === g_tmpMeanVal[g_selectedRow]; });
         
         // 3. setup barchart
-        drawBarcharts(g_tmpMeanVal, 0, "barchart", "#dotplotView", g_dpwidth, g_dpheight, g_margin);
+        drawBarcharts(g_tmpMeanVal, g_selectedRow, "barchart", "#dotplotView", g_dpwidth, g_dpheight, g_margin);
+
+
     });
 }

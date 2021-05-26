@@ -1996,9 +1996,6 @@ function tcmVAmain() {
   .attr("value", function (d) { return d; }) // corresponding value returned by the button
   .property("selected", function(d){ return d === '套索'; });
   // interactMode behavior
-  
-
-
 
   var scMode = ['四气五味', '症状'];
   var defaultOptionName = '症状';

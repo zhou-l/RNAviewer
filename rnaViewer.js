@@ -6,8 +6,8 @@ var g_bcwidth = 1200;
 var g_bcheight = 600;
 
 // dot plots
-var g_dpwidth = 1200;
-var g_dpheight = 600;
+var g_dpwidth = 1000;
+var g_dpheight = 400;
 
 // body view
 var g_bvwidth = 400;
@@ -25,6 +25,16 @@ var g_sgwidth = 1400;
 var g_sgLegendWidth = 100;
 var g_sgheight = 300;
 
+
+// // colormap steps for colors
+// [0-3）
+// [3-6）
+// [6-11）
+// [11-26）
+// [26-51）
+// [51-101）
+// [101-501）
+// [501，+∞）
 
 function drawBodyView(data, className, divName, width, height, margin)
 {
@@ -56,31 +66,12 @@ function drawBodyView(data, className, divName, width, height, margin)
     .style("fill", function(d,i){return g_exprValColorMap(i/parts.length)})
     ;
 
-    // Get image outline
-    // var getImageOutline = require(['image-outline']);
-    // getImageOutline(logoUrl, function (err, polygon) {
-    //     if (err) {
-    //         // err is an Error; handle it
-    //         return;
-    //     }
-
-    //     // polygon is now an array of {x,y} objects. Have fun!
-    //     console.log(polygon);
-    // });
 
     // Draw parts
+    // Warning: All body parts are transformed to correct positions with hard coded transformation information
+    // TODO: figure out what went wrong!
     var parts = [1];//[1,2,3,4,5];
     var nodePartSilhouette = svg.append("g").attr("class", "bodyShape");
-    // nodePartSilhouette.select(".bodyOutline")
-    // .data(g_pathFiles)
-    // .enter()
-    // .append('path')
-    // .attr("class","bodyOutline")
-    // .attr("id", function(d,i){return "bodyPart"+i;});
-
-    // .select(".bodyOutline");
-    // .data(parts)
-    // .enter();
     var allPathData = [];
     var xscale = 0.65*width/g_orgBodyImgWidth;
     var yscale = height/g_orgBodyImgHeight;
@@ -380,6 +371,77 @@ function drawDotplots()
 
 }
 
+function drawBarcharts(data, selectedRow, className, divName, width, height, margin)
+{
+// append the svg object to the body of the page
+var svg = d3.select(divName)
+  .append("svg")
+  .attr('class', className)
+  .attr('id', className)
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+    var keys = data.columns.slice(1);
+    console.log(keys);
+    var selectedData = data[selectedRow];
+    // X axis
+    var x = d3.scaleBand()
+        .range([0, width])
+        .rangeRound([margin.left, width - margin.right])
+        // .domain(function (d) { 
+        // })
+        .domain(keys)
+        .padding(0.2);
+    svg.append("g")
+        .attr("transform", "translate(0," + (height-margin.bottom) + ")")
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        //  .attr("transform", "translate(10,0)")
+        .style("text-anchor", "center");
+    // convert data row to keys
+    var convertedData = [];
+    for (var i = 0; i < keys.length; i++) {
+        var item = {key: keys[i], val: +selectedData[keys[i]]};
+        // item.key = keys[i];
+        // item.val = +selectedData[keys[i]];
+        convertedData.push(item);
+    }
+    // Add Y axis
+    var y = d3.scaleLinear()
+        // .domain([0, d3.max(selectedData, function(d){return d3.max(d.val);})]).nice()
+        .range([height, 0])
+        .rangeRound([height - margin.bottom, margin.top]);
+    y.domain([0, d3.max(convertedData, function(d){return d.val;})]).nice();    
+    svg.append("g")
+        .attr("transform", "translate("+margin.left+",0)")
+        .call(d3.axisLeft(y));
+
+    // Bars
+    
+    svg.selectAll("mybar")
+        .data(convertedData)
+        .enter()
+        .append("rect")
+        .attr("class", "mybar")
+        .attr("x", function (d) { 
+            return x(d.key); })
+        .attr("y", function (d) { 
+            console.log(y(d.val));
+            return y(d.val); })
+        .attr("width", x.bandwidth())
+        .attr("height", function (d) { return y(0) - y(d.val); })
+        .attr("fill", "#69b3a2")
+
+}
+
+// Update views with different search terms
+function redrawAll()
+{
+
+}
+
 function rnaViewerMain()
 {
     // g_exprValColorMap = d3.scaleOrdinal(d3.schemeYlOrRd[5]);
@@ -401,6 +463,10 @@ function rnaViewerMain()
         // 1.setup views
         drawBodyView(g_tmpMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
 
+        // 2. setup search box
         setupSearchView(g_tmpMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
+        
+        // 3. setup barchart
+        drawBarcharts(g_tmpMeanVal, 0, "barchart", "#dotplotView", g_dpwidth, g_dpheight, g_margin);
     });
 }

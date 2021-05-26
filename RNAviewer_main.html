@@ -128,26 +128,30 @@ table {
 
 </style>
 
-<div id="VAcanvas" class=" w3-cell-row w3-content w3-mobile  "style=" height:1600px;width:1300px;overflow:scroll">
+<div id="VAcanvas" class=" w3-content w3-mobile  "style=" height:1600px;width:1200px">
     <!-- <div class = "w3-cell-row"> -->
 		
 
-
-            <div id="rnaSearchBox" class=" w3-container w3-cell" style="width:500px;height:600px;">
+		<div class="row">
+			<div id="rnaSearchBox" class=" w3-container w3-cell column" style="width:500px;height:600px;">
 
                 <textarea id="searchBox" name="searchBox" placeholder="search a RNA..." style="width:500px;position:absolute;top:150px;"></textarea>
                 <select id="selectButton" ></select>
 
             </div>
-            <div id="bodyView" class=" w3-container w3-cell" style="width:400px;height:600px;"></div>
-            <div id="dotplotView" class = "w3-container w3-cell"style ="width:1200px;height:600px;"></div>
+            <div id="bodyView" class=" w3-container w3-cell column" style="width:400px;height:600px;"></div>
+		</div>
+        
+		<div class="row">
+            <div id="dotplotView" class = "w3-container w3-cell-row"style ="width:1200px;height:400px;"></div>
+		</div>
+
             <!-- <div id="barchartView" class = "w3-container" style="width:1200px;height:600px"></div>
             <select id="selectButton" ></select>
 			<select id="mainModeSelectButton" ></select>
 			<select id="compareSelectButton" ></select>
 			<select id="compareModeSelectButton" ></select>
 			<select id="interactModeSelectButton"></select>
-			
             <div id="exampleSC" class="w3-container" style="width:1500px;height:700px;">        </div>     -->
 
         <!-- <div class = "w3-container w3-cell w3-mobile" style="overflow-x:scroll">

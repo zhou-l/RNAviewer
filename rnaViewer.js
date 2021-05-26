@@ -333,7 +333,7 @@ function drawBodyView(data, className, divName, width, height, margin)
             .style("opacity", "0.5")
             .attr("transform", "translate(" + 70 + "," + 0 + ")");
 
-
+            // Update fill colors
             redrawAll();
     });
 
@@ -352,17 +352,31 @@ function drawBodyView(data, className, divName, width, height, margin)
 function setupSearchView(g_tmpMeanVal, className, divName, width, height, margin)
 {
     
-    // var svg = d3.select(divName)
-    // .append("svg")
-    // .attr('class', className)
-    // .attr('id', className)
+    var svg = d3.select("#rnaInfo")
+    .append("svg")
+
     // .attr("width", width + margin.left + margin.right)
     // .attr("height", height + margin.top + margin.bottom)
-    // .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("width", 500)
+    .attr("height", 300)
+    .attr("transform", "translate(" + margin.left + "," + (margin.top + 200) + ")")
+    ;
+
+    var textSvg = svg.append("g");
+    textSvg
+    .append('text')
+    .attr('class', "rnaInfoText")
+    .attr('id', "rnaInfoText")
+    .attr("x", 0)
+    .attr("y", 10)
+    .attr("dy", ".35em")
+    .text("This is the field of RNA info text!");
 
     // return svg;
     d3.select("#rnaSearchButton")
     .on("click", function(){doSearch();})
+
+
 }
 
 
@@ -498,7 +512,11 @@ function redrawAll()
 
    // update the bar charts
    d3.select("#barchart").remove();
-   drawBarcharts(g_tmpMeanVal, g_selectedRow, "barchart", "#dotplotView", g_dpwidth, g_dpheight, g_margin)
+   drawBarcharts(g_tmpMeanVal, g_selectedRow, "barchart", "#dotplotView", g_dpwidth, g_dpheight, g_margin);
+
+   // update the text 
+   d3.select("#rnaInfoText")
+   .text(function() {return g_tmpMeanVal[g_selectedRow].Symbol; });
 }
 
 function exprValColormap(){

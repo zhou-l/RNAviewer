@@ -36,6 +36,7 @@ var g_selectedData = null;
 // [51-101）
 // [101-501）
 // [501，+∞）
+var g_colormapThres = [0, 3, 6, 11, 26, 51, 101, 501];
 
 function drawBodyView(data, className, divName, width, height, margin)
 {
@@ -64,10 +65,33 @@ function drawBodyView(data, className, divName, width, height, margin)
     .attr("class", "bodyParts")
     .attr("id",function(d,i){return i;})
     .attr("r",10)
-    .attr("cx", function(d,i){return width;})
+    .attr("cx", function(d,i){return width - 35;})
     .attr("cy", function(d,i){return 20 + 25*i;})
     .style("fill", function(d,i){return g_exprValColorMap(d)})
     ;
+
+    svg.append("g").selectAll(".legendLabels")
+      .data(g_colormapThres)
+      .enter()
+      .append("text")
+      .style("font-size", "12px")
+      .attr("x", width-25)
+      .attr("y", function (d, i) { 
+          return 20 + i * 25; }) // 100 is where the first dot appears. 25 is the distance between dots
+      // .style("fill", function (d,i) { return gDefaultColRange(i); })
+      .text(function (d, i) { 
+        //   var newStr = d.replace(/ *\（[^)]*\） */g, "");
+        //    return newStr; 
+        var thres = null;
+        if(i < g_colormapThres.length-1)
+            thres = "["+d+","+g_colormapThres[i+1]+")"; 
+        else
+            thres = "["+d+",+inf)";
+
+        return thres;
+      })
+      .attr("text-anchor", "left")
+      .style("alignment-baseline", "middle")
 
 
     // Draw parts
@@ -342,7 +366,7 @@ function drawBodyView(data, className, divName, width, height, margin)
         .attr('xlink:href', logoUrl)
         .attr("fill", "black")
         .style('stroke', '#AAA')
-        .style("opacity",0.1)
+        .style("opacity",0.8)
         ;
 
  
@@ -366,11 +390,27 @@ function setupSearchView(g_tmpMeanVal, className, divName, width, height, margin
     textSvg
     .append('text')
     .attr('class', "rnaInfoText")
-    .attr('id', "rnaInfoText")
+    .attr('id', "rnaInfoText1")
     .attr("x", 0)
     .attr("y", 10)
     .attr("dy", ".35em")
-    .text("This is the field of RNA info text!");
+    .text("Link1!")
+    .on("click", function(d) {window.open("http://news.qq.com");})
+    // .on("mouseover", function(d, i){ 
+    //     d3.select(this) 
+    //         .attr({"xlink:href": "http://example.com/" + d});
+    // })
+    ;
+
+    textSvg
+    .append('text')
+    .attr('class', "rnaInfoText")
+    .attr('id', "rnaInfoText2")
+    .attr("x", 50)
+    .attr("y", 10)
+    .attr("dy", ".35em")
+    .text("Link2!")
+    .on("click", function(d) {window.open("http://google.com");});
 
     // return svg;
     d3.select("#rnaSearchButton")
@@ -484,31 +524,36 @@ function redrawAll()
    .style("fill", function(){
        var val = g_tmpMeanVal[g_selectedRow].HeadNeck;
        return g_exprValColorMap(val);
-   });
+   })
+   .style("opacity", "1");
 
    var partExtremities = bodyView.selectAll("#pathExtremities")
    .style("fill", function(){
        var val = g_tmpMeanVal[g_selectedRow].Extremities;
        return g_exprValColorMap(val);
-   });
+   })
+   .style("opacity", "1");
 
    var partPerinaeum = bodyView.selectAll("#pathPerinaeum")
    .style("fill", function(){
        var val = g_tmpMeanVal[g_selectedRow].Perinaeum;
        return g_exprValColorMap(val);
-   });
+   })
+   .style("opacity", "1");
 
    var partBody = bodyView.selectAll("#pathBody")
    .style("fill", function(){
        var val = g_tmpMeanVal[g_selectedRow].Body;
        return g_exprValColorMap(val);
-   });
+   })
+   .style("opacity", "1");
 
    var partPalmSole = bodyView.selectAll("#pathPalmSole")
    .style("fill", function(){
        var val = g_tmpMeanVal[g_selectedRow].PalmSole;
        return g_exprValColorMap(val);
-   });
+   })
+   .style("opacity", "1");
 
    // update the bar charts
    d3.select("#barchart").remove();
@@ -534,7 +579,7 @@ function rnaViewerMain()
     // g_exprValColorMap = d3.scaleSequential(d3.interpolateYlOrRd);
 
     g_exprValColorMap = exprValColormap();
-    g_selectedRow = 6;
+    g_selectedRow = 0;
     // 0. set up views  
     // drawBodyView(g_tmpMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
     // 0.load data

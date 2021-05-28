@@ -124,7 +124,8 @@ table {
           display: inline-block;
 		}
 	}
-	
+	li {display: inline-block; min-width: 80px; padding: 10px; background-color: #eee; margin: 0;}
+	ul {list-style: none; margin: 0; padding: 0;}
 
 </style>
 
@@ -135,8 +136,8 @@ table {
 		<div class="row">
 			<div id="rnaInfoArea" class=" w3-container w3-cell column" style="width:500px;height:600px;">
 
-                <textarea id="rnaSearchBox" placeholder="search an RNA..." style="width:400px;position:absolute;top:150px;"></textarea>
-                <button id="rnaSearchButton" style="position:relative;top:150px;left:400px">Try it</button>
+                <textarea id="rnaSearchBox" placeholder="search an RNA, for example, A1BG" style="width:400px;position:absolute;top:150px;"></textarea>
+                <button id="rnaSearchButton" style="position:relative;top:150px;left:400px">Search</button>
 				<!-- <select id="rnaDropbox" style="width:500px;position:relative;top:240px;"></select> -->
 
 				<div id = "rnaInfo" style="width:500px; height:400px"></div>
@@ -146,7 +147,9 @@ table {
 		</div>
         
 		<div class="row">
+		
             <div id="dotplotView" class = "w3-container w3-cell-row"style ="width:1200px;height:400px;"></div>
+			<div id="barchartView" class = "w3-container w3-cell-row"style ="width:1200px;height:400px;"></div>
 		</div>
 
             <!-- <div id="barchartView" class = "w3-container" style="width:1200px;height:600px"></div>

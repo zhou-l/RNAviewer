@@ -17,6 +17,8 @@ var g_orgBodyImgHeight = 1125;
 
 // global data
 var g_tmpMeanVal = [];
+var g_tmpFullData = [];
+var g_tmpSubInfo = [];
 var g_exprValColorMap = [];
 var g_pathFiles = ['./data/pathHeadNeck.txt','./data/pathLegs.txt','./data/pathTorso.txt',
 './data/pathPerinaeum.txt','./data/pathArmsHands.txt'];
@@ -27,7 +29,8 @@ var g_sgheight = 300;
 // selected row of the data
 var g_selectedRow = 0;
 var g_selectedData = null;
-// // colormap steps for colors
+
+// // colormap range of the body viewer
 // [0-3）
 // [3-6）
 // [6-11）
@@ -37,6 +40,7 @@ var g_selectedData = null;
 // [101-501）
 // [501，+∞）
 var g_colormapThres = [0, 3, 6, 11, 26, 51, 101, 501];
+var g_colormapGroups = d3.scaleOrdinal(d3.schemePuOr[11]);
 
 function drawBodyView(data, className, divName, width, height, margin)
 {
@@ -103,7 +107,7 @@ function drawBodyView(data, className, divName, width, height, margin)
     var xscale = 0.65*width/g_orgBodyImgWidth;
     var yscale = height/g_orgBodyImgHeight;
 
-    console.log(g_tmpMeanVal[g_selectedRow]);
+    // console.log(g_tmpMeanVal[g_selectedRow]);
 
     d3.queue()
     .defer(d3.csv, "./data/pathPalmSole1.txt")
@@ -320,6 +324,7 @@ function drawBodyView(data, className, divName, width, height, margin)
             .attr("id", "pathPerinaeum")
             .attr("class", "bodyOutline")
             .attr("d", function () {
+
                 var pathStr = "M ";
         
                 for (var i = 0; i < data9.length; i++) {
@@ -378,44 +383,128 @@ function setupSearchView(g_tmpMeanVal, className, divName, width, height, margin
     
     var svg = d3.select("#rnaInfo")
     .append("svg")
-
-    // .attr("width", width + margin.left + margin.right)
-    // .attr("height", height + margin.top + margin.bottom)
+    .attr("class","rnaInfoSvg")
     .attr("width", 500)
     .attr("height", 300)
-    .attr("transform", "translate(" + margin.left + "," + (margin.top + 200) + ")")
-    ;
+    .attr("transform", "translate(0," + (margin.top + 200) + ")");
+    
+    var ww = 120;
+    var hh = 30;
+    var tagMargin = {left:10, right:10, top:20, bottom:20};
 
-    var textSvg = svg.append("g");
-    textSvg
-    .append('text')
+
+    var externalLinks = ["GeneCards","NCBI","ensembl","proteinatlas"];
+
+    var generalTextInfoNode = svg.append("text")
+    .attr("class","generalInfoText")
+    .attr("x", 10)
+    .attr("y", 20)
+    .text(function(){
+        var info = g_tmpMeanVal[g_selectedRow].Symbol + " is found. Read more by clicking the sources below.";
+        return info;
+    })
+    ;
+    var infoOffset = 50;
+
+    var node = svg.selectAll(".linkTag")
+    .data(externalLinks)
+    .enter()
+    .append("g")
+    .attr("class","linkTag");
+     
+    node.append("rect")
+    .attr("width", ww - tagMargin.left - tagMargin.right)
+    .attr("height", hh)
+    .attr("x", function (d,i) { return ww*i; })
+    .attr("y", function () { return infoOffset; })
+    .style("fill", "#eeeeee")
+    .on("click", function(d) {
+        var link = null;
+        if (d === "GeneCards")
+            link = "https://www.genecards.org/cgi-bin/carddisp.pl?gene=";
+        else if (d === "NCBI")
+            link = "https://www.ncbi.nlm.nih.gov/gene/?term=";
+        else if (d === "ensembl")
+            link = "http://asia.ensembl.org/Multi/Search/Results?q=";
+        else if (d === "proteinatlas")
+            link = "https://www.proteinatlas.org/search";
+        else
+            return;
+        link += g_tmpMeanVal[g_selectedRow].Symbol;
+        window.open(link);   
+    });
+    // .append()
+
+
+    // var linkTag1 =  textSvg
+     node.append('text')
     .attr('class', "rnaInfoText")
     .attr('id', "rnaInfoText1")
-    .attr("x", 0)
-    .attr("y", 10)
+    .attr("x", function(d,i) { return ww*i + 10;})
+    .attr("y", function(){return infoOffset + hh/2;})
     .attr("dy", ".35em")
-    .text("Link1!")
-    .on("click", function(d) {window.open("http://news.qq.com");})
-    // .on("mouseover", function(d, i){ 
-    //     d3.select(this) 
-    //         .attr({"xlink:href": "http://example.com/" + d});
-    // })
-    ;
+    .text(function(d){return d;})
+    .on("click", function(d) {
+        var link = null;
+        if (d === "GeneCards")
+            link = "https://www.genecards.org/cgi-bin/carddisp.pl?gene=";
+        else if (d === "NCBI")
+            link = "https://www.ncbi.nlm.nih.gov/gene/?term=";
+        else if (d === "ensembl")
+            link = "http://asia.ensembl.org/Multi/Search/Results?q=";
+        else if (d === "proteinatlas")
+            link = "https://www.proteinatlas.org/search/";
+        else
+            return;
+        link += g_tmpMeanVal[g_selectedRow].Symbol;
+        window.open(link);   
+    });
+    
+    
+//     // textSvg
+//     // .append('li');
+//     var linkTag2 = textSvg.append("text")
+//     .attr('class', "rnaInfoText")
+//     .attr('id', "rnaInfoText2")
+//     .attr("x", 50)
+//     .attr("y", 10)
+//     .attr("dy", ".35em")
+//     .text("NCBI")
+//     .on("click", function(d) {
+//         var link = "https://www.ncbi.nlm.nih.gov/gene/?term=";
+//         link += g_tmpMeanVal[g_selectedRow].Symbol;
+//         window.open(link);
+//     });
 
-    textSvg
-    .append('text')
-    .attr('class', "rnaInfoText")
-    .attr('id', "rnaInfoText2")
-    .attr("x", 50)
-    .attr("y", 10)
-    .attr("dy", ".35em")
-    .text("Link2!")
-    .on("click", function(d) {window.open("http://google.com");});
+//     var linkTag3 = textSvg.append("text")
+//     .attr('class', "rnaInfoText")
+//     .attr('id', "rnaInfoText2")
+//     .attr("x", 50)
+//     .attr("y", 10)
+//     .attr("dy", ".35em")
+//     .text("ensembl")
+//     .on("click", function(d) {
+//         var link = "http://asia.ensembl.org/Multi/Search/Results?q=";
+//         link += g_tmpMeanVal[g_selectedRow].Symbol;
+//         window.open(link);
+//     });
+
+//    var linkTag4 = textSvg.append("text")
+//     .attr('class', "rnaInfoText")
+//     .attr('id', "rnaInfoText2")
+//     .attr("x", 50)
+//     .attr("y", 10)
+//     .attr("dy", ".35em")
+//     .text("proteinatlas")
+//     .on("click", function(d) {
+//         var link = "https://www.proteinatlas.org/search/";
+//         link += g_tmpMeanVal[g_selectedRow].Symbol;
+//         window.open(link);
+//     });
 
     // return svg;
     d3.select("#rnaSearchButton")
     .on("click", function(){doSearch();})
-
 
 }
 
@@ -439,9 +528,106 @@ function doSearch() {
     }
   }
 
-function drawDotplots()
+function drawDotplots(data, subjectInfoData, className, divName, width, height, margin)
 {
+  // append the svg object to the body of the page
+  var svg = d3.select(divName)
+  .append("svg")
+  .attr('class', className)
+  .attr('id', className)
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform",
+      "translate(" + margin.left + "," + margin.top + ")");
 
+    var groups = g_tmpMeanVal.columns.slice(1);
+    var selectedData = data;
+    // X axis
+    var x = d3.scaleBand()
+        .range([0, width])
+        .rangeRound([margin.left, width - margin.right])
+        // .domain(function (d) { 
+        // })
+        .domain(groups)
+        .padding(0.2);
+    svg.append("g")
+        .attr("transform", "translate(0," + (height - margin.bottom) + ")")
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        //  .attr("transform", "translate(10,0)")
+        .style("text-anchor", "center");
+
+
+
+    // Another scale for subgroup position?
+    var subgroups = ['F', 'M'];
+    var xSubgroup = d3.scaleBand()
+        .domain(subgroups)
+        .range([0, x.bandwidth()])
+        .padding([0.05])
+
+    // Group the data into subgroups
+    var groupedData = [];
+    var dkeys = d3.keys(data).slice(1);
+    for(var i = 0; i < dkeys.length; i++)
+    {
+        // console.log(dkeys[i]);
+        // Find the key in the subjectInfo data
+        var info = subjectInfoData.filter(function(d) { 
+            return d.id === dkeys[i];});
+        if(info.length != 1)
+            continue;
+        // console.log(info);
+        var datum = {val: data[dkeys[i]], group: info[0].location, age: info[0].age, sex: info[0].sex};
+        groupedData.push(datum);
+
+    }
+    // Add Y axis
+    var y = d3.scaleLinear()
+        // .domain([0, d3.max(selectedData, function(d){return d3.max(d.val);})]).nice()
+        .range([height, 0])
+        .rangeRound([height - margin.bottom, margin.top]);
+    y.domain([0, d3.max(groupedData, function (d) { return d.val; })]).nice();
+    svg.append("g")
+        .attr("transform", "translate(" + margin.left + ",0)")
+        .call(d3.axisLeft(y));
+
+
+    // // Add individual points with jitter
+    // var jitterWidth = 50;
+    // svg.selectAll("indPoints")
+    //     .data(selectedData)
+    //     .enter()
+    //     .append("circle")
+    //     .attr("cx", function (d) { return (x(d.Sepal_Length)) })
+    //     .attr("cy", function (d) { return (y(d.Species) + (y.bandwidth() / 2) - jitterWidth / 2 + Math.random() * jitterWidth) })
+    //     .attr("r", 4)
+    //     .style("fill", function (d) { return (myColor(+d.Sepal_Length)) })
+    //     .attr("stroke", "black")
+
+    // Show the bars
+    svg.append("g")
+        .selectAll("g")
+        // Enter in data = loop group per group
+        .data(groupedData)
+        .enter()
+        .append("g")
+        .attr("transform", function (d) { return "translate(" + x(d.group) + ",0)"; })
+        .selectAll("rect")
+        .data(function (d) { 
+            console.log(d);
+            return subgroups.map(function () {
+                // console.log(kky);
+                var kky = (d.sex === "female")? "F" : "M";
+                return { key: kky, value: d.val }; }); 
+        })
+        .enter().append("rect")
+        .attr("x", function (d) { return xSubgroup(d.key); })
+        .attr("y", function (d) { return y(d.value); })
+        .attr("width", xSubgroup.bandwidth())
+        .attr("height", function (d) { return y(0) - y(d.value); })
+        .attr("fill", function (d) { return g_colormapGroups(d.key); });
 
 }
 
@@ -503,7 +689,7 @@ function drawBarcharts(data, selectedRow, className, divName, width, height, mar
             return x(d.key);
         })
         .attr("y", function (d) {
-            console.log(y(d.val));
+            // console.log(y(d.val));
             return y(d.val);
         })
         .attr("width", x.bandwidth())
@@ -557,11 +743,13 @@ function redrawAll()
 
    // update the bar charts
    d3.select("#barchart").remove();
-   drawBarcharts(g_tmpMeanVal, g_selectedRow, "barchart", "#dotplotView", g_dpwidth, g_dpheight, g_margin);
+   drawBarcharts(g_tmpMeanVal, g_selectedRow, "barchart", "#drawBarcharts", g_dpwidth, g_dpheight, g_margin);
 
    // update the text 
-   d3.select("#rnaInfoText")
-   .text(function() {return g_tmpMeanVal[g_selectedRow].Symbol; });
+//    d3.select("#rnaInfoText")
+//    .text(function() {return g_tmpMeanVal[g_selectedRow].Symbol; });
+   d3.select(".rnaInfoSvg").remove();
+   setupSearchView(g_tmpMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
 }
 
 function exprValColormap(){
@@ -609,8 +797,33 @@ function rnaViewerMain()
         // .property("selected", function(d){ return d.Symbol === g_tmpMeanVal[g_selectedRow]; });
         
         // 3. setup barchart
-        drawBarcharts(g_tmpMeanVal, g_selectedRow, "barchart", "#dotplotView", g_dpwidth, g_dpheight, g_margin);
-
-
+        drawBarcharts(g_tmpMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
     });
+
+    // 4. load the full data
+ d3.queue()
+    .defer(d3.csv, "./data/tpm_full.csv")
+    .defer(d3.csv, "./data/subjectInfo.csv")
+    .await(function(error, data1, data2){
+        if(error) throw error;
+
+        // Handle the full tpm
+        var valueKey = data1.columns;
+        data1.forEach(function(d) {
+            for(var i = 0; i < valueKey.length; i++)
+            {
+                if(valueKey[i] === "Symbol" )
+                     d[valueKey[i]] = d[valueKey[i]];
+                else
+                    d[valueKey[i]] = +d[valueKey[i]];
+            }
+        });
+        g_tmpFullData = data1;
+        // Handle the subject information
+        g_tmpSubInfo = data2;
+        
+        // draw the dotplot
+
+        drawDotplots(g_tmpFullData[g_selectedRow], g_tmpSubInfo, "dotplot", "#dotplotView", g_dpwidth, g_dpheight, g_margin);
+    })
 }

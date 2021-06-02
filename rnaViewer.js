@@ -590,21 +590,8 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .rangeRound([height - margin.bottom, margin.top]);
     y.domain([0, d3.max(groupedData, function (d) { return d.val; })]).nice();
     svg.append("g")
-        .attr("transform", "translate(" + margin.left + ",0)")
+        .attr("transform", "t ranslate(" + margin.left + ",0)")
         .call(d3.axisLeft(y));
-
-
-    // // Add individual points with jitter
-    // var jitterWidth = 50;
-    // svg.selectAll("indPoints")
-    //     .data(selectedData)
-    //     .enter()
-    //     .append("circle")
-    //     .attr("cx", function (d) { return (x(d.Sepal_Length)) })
-    //     .attr("cy", function (d) { return (y(d.Species) + (y.bandwidth() / 2) - jitterWidth / 2 + Math.random() * jitterWidth) })
-    //     .attr("r", 4)
-    //     .style("fill", function (d) { return (myColor(+d.Sepal_Length)) })
-    //     .attr("stroke", "black")
 
     // Show the bars
     svg.append("g")
@@ -613,6 +600,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .data(groupedData)
         .enter()
         .append("g")
+        .attr("class", "subgroupedBars")
         .attr("transform", function (d) { return "translate(" + x(d.group) + ",0)"; })
         .selectAll("rect")
         .data(function (d) { 
@@ -628,6 +616,31 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .attr("width", xSubgroup.bandwidth())
         .attr("height", function (d) { return y(0) - y(d.value); })
         .attr("fill", function (d) { return g_colormapGroups(d.key); });
+
+    // // Add individual points with jitter
+    var jitterWidth = 50;
+    svg.append("g")
+        .selectAll("g")
+        .data(groupedData)
+        .enter()
+        .append("g")
+        .attr("class", "subgroupedDots")
+        .attr("transform", function (d) { return "translate(" + x(d.group) + ",0)"; })
+        .selectAll("circle")
+        .data(function (d) { 
+            console.log(d);
+            return subgroups.map(function () {
+                // console.log(kky);
+                var kky = (d.sex === "female")? "F" : "M";
+                return { key: kky, value: d.val }; }); 
+        })
+        .enter().append("circle")
+        .attr("cx", function (d) { return ( xSubgroup(d.key)+ (xSubgroup.bandwidth() / 2) - jitterWidth / 2 + Math.random() * jitterWidth) })
+        .attr("cy", function (d) { return y(d.value); })
+        .attr("r", 4)
+        .style("fill", function (d) { return (g_colormapGroups(d.key)) })
+        .attr("stroke", "white")
+
 
 }
 

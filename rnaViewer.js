@@ -16,9 +16,9 @@ var g_orgBodyImgWidth = 493;
 var g_orgBodyImgHeight = 1125;
 
 // global data
-var g_tmpMeanVal = [];
-var g_tmpFullData = [];
-var g_tmpSubInfo = [];
+var g_tpmMeanVal = [];
+var g_tpmFullData = [];
+var g_tpmSubInfo = [];
 var g_exprValColorMap = [];
 var g_pathFiles = ['./data/pathHeadNeck.txt','./data/pathLegs.txt','./data/pathTorso.txt',
 './data/pathPerinaeum.txt','./data/pathArmsHands.txt'];
@@ -42,6 +42,100 @@ var g_selectedData = null;
 var g_colormapThres = [0, 3, 6, 11, 26, 51, 101, 501];
 var g_colormapGroups = d3.scaleOrdinal(d3.schemePuOr[11]);
 
+// function drawTable() {
+//     var tableFname = "Result-MedicalTable.csv";
+//     d3.csv(tableFname, function (error, data) {
+//         if (error) throw error;
+
+//         var sortAscending = true;
+//         var table = d3.select('#page-wrap').append('table');
+
+
+//         var dimensions = {};
+//         dimensions.width = 500;
+//         dimensions.height = 1200;
+//         var width = dimensions.width + "px";
+//         var height = dimensions.height + "px";
+//         var twidth = (dimensions.width - 25) + "px";
+//         var divHeight = (dimensions.height - 60) + "px";
+//         var inner = table.append("tr").append("td")
+//             .append("div").attr("class", "scroll").attr("width", width).attr("style", "height:" + divHeight + ";")
+//             .append("table").attr("class", "bodyTable").attr("border", 1).attr("width", twidth).attr("height", height).attr("style", "table-layout:fixed");
+
+//         var titles = d3.keys(data[0]);
+//         gMedProperties = data;
+
+//         var dataByCategory = d3.nest()
+//             .key(function (d) { return d.class })
+//             .entries(data);
+
+//         var dataByExpCategory = d3.nest()
+//             .key(function (d) { return d.classExp; })
+//             .entries(data);
+
+//         if (gDefaultMedClass == []) {
+//             for (var k = 0; k < dataByCategory.length; k++) {
+//                 gDefaultMedClass.push(dataByCategory[k].key);
+//             }
+//             var textbookOrder = [1, 3, 9, 0, 2, 7, 6, 10, 5, 4, 8];
+//             var tmpNameList1 = [];
+//             for (var i = 0; i < textbookOrder.length; i++)
+//                 tmpNameList1.push(gDefaultMedClass[textbookOrder[i]]);
+//             gDefaultMedClass = tmpNameList1;
+//             // sort by name
+//             // gDefaultMedClass.sort(function (a, b) { return d3.ascending(a, b); });
+//             //sort med property by class order
+
+//         }
+
+//         for (var k = 0; k < dataByExpCategory.length; k++) {
+//             gExpertMedClass.push(dataByExpCategory[k].key);
+//         }
+//         // // sort by name
+//         // gExpertMedClass.sort(function (a, b) { return d3.ascending(a, b); });
+//         var expOrder = [1, 3, 7, 0, 2, 5, 6, 4];
+//         var tmpNameList = [];
+//         for (var i = 0; i < expOrder.length; i++)
+//             tmpNameList.push(gExpertMedClass[expOrder[i]]);
+//         gExpertMedClass = tmpNameList;
+
+//         if (gDefaultMedClass.length < 15)
+//             gDefaultMedMajorClass = gDefaultMedClass;
+
+//         //sort med property by class order
+//         gMedProperties.sort(function (a, b) { return d3.ascending(a.expClass, b.expClass); });
+//         console.log(gMedProperties);
+
+//         var headers = inner.append('thead').append('tr')
+//             .selectAll('th')
+//             .data(titles).enter()
+//             .append('th')
+//             .text(function (d) {
+//                 return d;
+//             });
+
+
+//         // var rows = table.append('tbody').selectAll('tr')
+//         var rows = inner.append('tbody').selectAll('tr')
+//             .data(data).enter()
+//             .append('tr');
+//         rows.selectAll('td')
+//             .data(function (d) {
+//                 return titles.map(function (k) {
+//                     return { 'value': d[k], 'name': k };
+//                 });
+//             }).enter()
+//             .append('td')
+//             .attr('data-th', function (d) {
+//                 return d.name;
+//             })
+//             .text(function (d) {
+//                 return d.value;
+//             });
+//     });
+// }
+
+  
 function drawBodyView(data, className, divName, width, height, margin)
 {
 
@@ -107,7 +201,7 @@ function drawBodyView(data, className, divName, width, height, margin)
     var xscale = 0.65*width/g_orgBodyImgWidth;
     var yscale = height/g_orgBodyImgHeight;
 
-    // console.log(g_tmpMeanVal[g_selectedRow]);
+    // console.log(g_tpmMeanVal[g_selectedRow]);
 
     d3.queue()
     .defer(d3.csv, "./data/pathPalmSole1.txt")
@@ -141,8 +235,8 @@ function drawBodyView(data, className, divName, width, height, margin)
             return pathStr;
         })
         .style("fill", function () {
-            if(g_selectedRow >= 0 && g_selectedRow < g_tmpMeanVal.length) 
-                return g_exprValColorMap(+g_tmpMeanVal[g_selectedRow].PalmSole);
+            if(g_selectedRow >= 0 && g_selectedRow < g_tpmMeanVal.length) 
+                return g_exprValColorMap(+g_tpmMeanVal[g_selectedRow].PalmSole);
             else
                 return g_exprValColorMap(0); })
         .style("opacity","0.5")
@@ -166,8 +260,8 @@ function drawBodyView(data, className, divName, width, height, margin)
                 return pathStr;
             })
             .style("fill", function () {
-                if(g_selectedRow >= 0 && g_selectedRow < g_tmpMeanVal.length) 
-                    return g_exprValColorMap(+g_tmpMeanVal[g_selectedRow].PalmSole);
+                if(g_selectedRow >= 0 && g_selectedRow < g_tpmMeanVal.length) 
+                    return g_exprValColorMap(+g_tpmMeanVal[g_selectedRow].PalmSole);
                 else
                     return g_exprValColorMap(0); })
             .style("opacity", "0.5")
@@ -191,9 +285,9 @@ function drawBodyView(data, className, divName, width, height, margin)
                 return pathStr;
             })
             .style("fill", function () {
-                if(g_selectedRow >= 0 && g_selectedRow < g_tmpMeanVal.length) 
+                if(g_selectedRow >= 0 && g_selectedRow < g_tpmMeanVal.length) 
                 {
-                    var val = +g_tmpMeanVal[g_selectedRow].PalmSole;
+                    var val = +g_tpmMeanVal[g_selectedRow].PalmSole;
                     console.log(val);
                     return g_exprValColorMap(val);
                 }
@@ -221,8 +315,8 @@ function drawBodyView(data, className, divName, width, height, margin)
                 return pathStr;
             })
             .style("fill", function () {
-                if(g_selectedRow >= 0 && g_selectedRow < g_tmpMeanVal.length) 
-                    return g_exprValColorMap(+g_tmpMeanVal[g_selectedRow].PalmSole);
+                if(g_selectedRow >= 0 && g_selectedRow < g_tpmMeanVal.length) 
+                    return g_exprValColorMap(+g_tpmMeanVal[g_selectedRow].PalmSole);
                 else
                     return g_exprValColorMap(0); })
             .style("opacity", "0.5")
@@ -247,8 +341,8 @@ function drawBodyView(data, className, divName, width, height, margin)
                 return pathStr;
             })
             .style("fill", function () {
-                if(g_selectedRow >= 0 && g_selectedRow < g_tmpMeanVal.length) 
-                    return g_exprValColorMap(+g_tmpMeanVal[g_selectedRow].Extremities);
+                if(g_selectedRow >= 0 && g_selectedRow < g_tpmMeanVal.length) 
+                    return g_exprValColorMap(+g_tpmMeanVal[g_selectedRow].Extremities);
                 else
                     return g_exprValColorMap(0); })
             .style("opacity", "0.5")
@@ -378,7 +472,7 @@ function drawBodyView(data, className, divName, width, height, margin)
     return svg_img;
 }
 
-function setupSearchView(g_tmpMeanVal, className, divName, width, height, margin)
+function setupSearchView(g_tpmMeanVal, className, divName, width, height, margin)
 {
     
     var svg = d3.select("#rnaInfo")
@@ -400,7 +494,7 @@ function setupSearchView(g_tmpMeanVal, className, divName, width, height, margin
     .attr("x", 10)
     .attr("y", 20)
     .text(function(){
-        var info = g_tmpMeanVal[g_selectedRow].Symbol + " is found. Read more by clicking the sources below.";
+        var info = g_tpmMeanVal[g_selectedRow].Symbol + " is found. Read more by clicking the sources below.";
         return info;
     })
     ;
@@ -430,7 +524,7 @@ function setupSearchView(g_tmpMeanVal, className, divName, width, height, margin
             link = "https://www.proteinatlas.org/search";
         else
             return;
-        link += g_tmpMeanVal[g_selectedRow].Symbol;
+        link += g_tpmMeanVal[g_selectedRow].Symbol;
         window.open(link);   
     });
     // .append()
@@ -456,7 +550,7 @@ function setupSearchView(g_tmpMeanVal, className, divName, width, height, margin
             link = "https://www.proteinatlas.org/search/";
         else
             return;
-        link += g_tmpMeanVal[g_selectedRow].Symbol;
+        link += g_tpmMeanVal[g_selectedRow].Symbol;
         window.open(link);   
     });
     
@@ -472,7 +566,7 @@ function setupSearchView(g_tmpMeanVal, className, divName, width, height, margin
 //     .text("NCBI")
 //     .on("click", function(d) {
 //         var link = "https://www.ncbi.nlm.nih.gov/gene/?term=";
-//         link += g_tmpMeanVal[g_selectedRow].Symbol;
+//         link += g_tpmMeanVal[g_selectedRow].Symbol;
 //         window.open(link);
 //     });
 
@@ -485,7 +579,7 @@ function setupSearchView(g_tmpMeanVal, className, divName, width, height, margin
 //     .text("ensembl")
 //     .on("click", function(d) {
 //         var link = "http://asia.ensembl.org/Multi/Search/Results?q=";
-//         link += g_tmpMeanVal[g_selectedRow].Symbol;
+//         link += g_tpmMeanVal[g_selectedRow].Symbol;
 //         window.open(link);
 //     });
 
@@ -498,7 +592,7 @@ function setupSearchView(g_tmpMeanVal, className, divName, width, height, margin
 //     .text("proteinatlas")
 //     .on("click", function(d) {
 //         var link = "https://www.proteinatlas.org/search/";
-//         link += g_tmpMeanVal[g_selectedRow].Symbol;
+//         link += g_tpmMeanVal[g_selectedRow].Symbol;
 //         window.open(link);
 //     });
 
@@ -513,13 +607,13 @@ function doSearch() {
     var txtName = document.getElementById("rnaSearchBox");
     console.log(txtName.value);
     // do a simple traversal, for now
-    for(var i = 0; i < g_tmpMeanVal.length; i++)
+    for(var i = 0; i < g_tpmMeanVal.length; i++)
     {
-        if(g_tmpMeanVal[i].Symbol.toLowerCase() === txtName.value.toLowerCase())
+        if(g_tpmMeanVal[i].Symbol.toLowerCase() === txtName.value.toLowerCase())
         {
             if(i != g_selectedRow){
                 g_selectedRow = i;
-                g_selectedData = g_tmpMeanVal[g_selectedRow];
+                g_selectedData = g_tpmMeanVal[g_selectedRow];
                 console.log("found!");
                 redrawAll();
             }
@@ -541,7 +635,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
   .attr("transform",
       "translate(" + margin.left + "," + margin.top + ")");
 
-    var groups = g_tmpMeanVal.columns.slice(1);
+    var groups = g_tpmMeanVal.columns.slice(1);
     var selectedData = data;
     // X axis
     var x = d3.scaleBand()
@@ -604,14 +698,21 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .attr("transform", function (d) { return "translate(" + x(d.group) + ",0)"; })
         .selectAll("rect")
         .data(function (d) { 
-            console.log(d);
-            return subgroups.map(function () {
-                // console.log(kky);
-                var kky = (d.sex === "female")? "F" : "M";
-                return { key: kky, value: d.val }; }); 
+            // console.log(d);
+            // var newD = subgroups.map(function () {
+            //     // console.log(kky);
+            //     var kky = (d.sex === "female")? "F" : "M";
+            //     return { key: kky, value: d.val }; }); 
+
+            var kky = (d.sex === "female")? "F" : "M";
+            var newD = [{key: kky, value: d.val }];
+            console.log(newD);
+                return newD;
         })
         .enter().append("rect")
-        .attr("x", function (d) { return xSubgroup(d.key); })
+        .attr("x", function (d) {
+            console.log(d); 
+            return xSubgroup(d.key); })
         .attr("y", function (d) { return y(d.value); })
         .attr("width", xSubgroup.bandwidth())
         .attr("height", function (d) { return y(0) - y(d.value); })
@@ -628,11 +729,15 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .attr("transform", function (d) { return "translate(" + x(d.group) + ",0)"; })
         .selectAll("circle")
         .data(function (d) { 
-            console.log(d);
-            return subgroups.map(function () {
-                // console.log(kky);
+            // console.log(d);
+            // return subgroups.map(function () {
+            //     // console.log(kky);
+            //     var kky = (d.sex === "female")? "F" : "M";
+            //     return { key: kky, value: d.val }; }); 
                 var kky = (d.sex === "female")? "F" : "M";
-                return { key: kky, value: d.val }; }); 
+                var newD = [{key: kky, value: d.val }];
+                // console.log(newD);
+                    return newD;
         })
         .enter().append("circle")
         .attr("cx", function (d) { return ( xSubgroup(d.key)+ (xSubgroup.bandwidth() / 2) - jitterWidth / 2 + Math.random() * jitterWidth) })
@@ -642,6 +747,34 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .attr("stroke", "white")
 
 
+        // Draw legends
+        
+    var ww = 14;
+    svg.append("g").selectAll("labelsRect")
+        .data(subgroups)
+        .enter()
+        .append("rect")
+        .attr("width", ww)
+        .attr("height", ww)
+        .attr("x", width-50)
+        .attr("y", function (d, i) { return 20 + i * 25 - ww / 2; })
+        .style("fill", function (d, i) {
+            return g_colormapGroups(d);
+        })
+
+    svg.append("g").selectAll("labels")
+        .data(subgroups)
+        .enter()
+        .append("text")
+        .style("font-size", "12px")
+        .attr("x", width-30)
+        .attr("y", function (d, i) { return 20 + i * 25; }) // 100 is where the first dot appears. 25 is the distance between dots
+        // .style("fill", function (d,i) { return gDefaultColRange(i); })
+        .text(function (d) {
+            return d;
+        })
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle")
 }
 
 function drawBarcharts(data, selectedRow, className, divName, width, height, margin)
@@ -714,55 +847,55 @@ function drawBarcharts(data, selectedRow, className, divName, width, height, mar
 // Update views with different search terms
 function redrawAll()
 {
-    if(g_selectedRow < 0 || g_selectedRow >= g_tmpMeanVal.length)
+    if(g_selectedRow < 0 || g_selectedRow >= g_tpmMeanVal.length)
     return;
 
     // update the body view
    const bodyView = d3.select("#bodyView");
    var partHeadNeck = bodyView.selectAll("#pathHeadNeck")
    .style("fill", function(){
-       var val = g_tmpMeanVal[g_selectedRow].HeadNeck;
+       var val = g_tpmMeanVal[g_selectedRow].HeadNeck;
        return g_exprValColorMap(val);
    })
    .style("opacity", "1");
 
    var partExtremities = bodyView.selectAll("#pathExtremities")
    .style("fill", function(){
-       var val = g_tmpMeanVal[g_selectedRow].Extremities;
+       var val = g_tpmMeanVal[g_selectedRow].Extremities;
        return g_exprValColorMap(val);
    })
    .style("opacity", "1");
 
    var partPerinaeum = bodyView.selectAll("#pathPerinaeum")
    .style("fill", function(){
-       var val = g_tmpMeanVal[g_selectedRow].Perinaeum;
+       var val = g_tpmMeanVal[g_selectedRow].Perinaeum;
        return g_exprValColorMap(val);
    })
    .style("opacity", "1");
 
    var partBody = bodyView.selectAll("#pathBody")
    .style("fill", function(){
-       var val = g_tmpMeanVal[g_selectedRow].Body;
+       var val = g_tpmMeanVal[g_selectedRow].Body;
        return g_exprValColorMap(val);
    })
    .style("opacity", "1");
 
    var partPalmSole = bodyView.selectAll("#pathPalmSole")
    .style("fill", function(){
-       var val = g_tmpMeanVal[g_selectedRow].PalmSole;
+       var val = g_tpmMeanVal[g_selectedRow].PalmSole;
        return g_exprValColorMap(val);
    })
    .style("opacity", "1");
 
    // update the bar charts
    d3.select("#barchart").remove();
-   drawBarcharts(g_tmpMeanVal, g_selectedRow, "barchart", "#drawBarcharts", g_dpwidth, g_dpheight, g_margin);
+   drawBarcharts(g_tpmMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
 
    // update the text 
 //    d3.select("#rnaInfoText")
-//    .text(function() {return g_tmpMeanVal[g_selectedRow].Symbol; });
+//    .text(function() {return g_tpmMeanVal[g_selectedRow].Symbol; });
    d3.select(".rnaInfoSvg").remove();
-   setupSearchView(g_tmpMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
+   setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
 }
 
 function exprValColormap(){
@@ -782,7 +915,7 @@ function rnaViewerMain()
     g_exprValColorMap = exprValColormap();
     g_selectedRow = 0;
     // 0. set up views  
-    // drawBodyView(g_tmpMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+    // drawBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
     // 0.load data
     d3.csv("./data/tpm_meanVal.csv", function(data){
         for(var i = 0; i < data.length; i++)
@@ -793,24 +926,24 @@ function rnaViewerMain()
             data[i].PalmSole = +data[i].PalmSole;
             data[i].Perinaeum = +data[i].Perinaeum;
         }
-        g_tmpMeanVal = data;
+        g_tpmMeanVal = data;
 
         // 1.setup views
-        drawBodyView(g_tmpMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+        drawBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
 
         // 2. setup search box
-        setupSearchView(g_tmpMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
+        setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
         // 2.1 setup drop box
         // d3.select("#rnaDropbox")
         // .selectAll('rnaOptions')
-        // .data(g_tmpMeanVal)
+        // .data(g_tpmMeanVal)
         // .enter()
         // .text(function (d) { return d.Symbol; }) // text showed in the menu
         // .attr("value", function (d,i) { return i; }) // corresponding value returned by the button
-        // .property("selected", function(d){ return d.Symbol === g_tmpMeanVal[g_selectedRow]; });
+        // .property("selected", function(d){ return d.Symbol === g_tpmMeanVal[g_selectedRow]; });
         
         // 3. setup barchart
-        drawBarcharts(g_tmpMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
+        drawBarcharts(g_tpmMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
     });
 
     // 4. load the full data
@@ -831,12 +964,12 @@ function rnaViewerMain()
                     d[valueKey[i]] = +d[valueKey[i]];
             }
         });
-        g_tmpFullData = data1;
+        g_tpmFullData = data1;
         // Handle the subject information
-        g_tmpSubInfo = data2;
+        g_tpmSubInfo = data2;
         
         // draw the dotplot
 
-        drawDotplots(g_tmpFullData[g_selectedRow], g_tmpSubInfo, "dotplot", "#dotplotView", g_dpwidth, g_dpheight, g_margin);
+        drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplot", "#dotplotView", g_dpwidth, g_dpheight, g_margin);
     })
 }

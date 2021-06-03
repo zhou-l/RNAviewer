@@ -622,7 +622,7 @@ function doSearch() {
     }
   }
 
-function drawDotplots(data, subjectInfoData, className, divName, width, height, margin)
+function drawDotplots(data, subjectInfoData, className, divName, width, height, margin, zsubgroups=['F','M'])
 {
   // append the svg object to the body of the page
   var svg = d3.select(divName)
@@ -655,7 +655,15 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
 
 
     // Another scale for subgroup position?
-    var subgroups = ['F', 'M'];
+    // var subgroups = ['F', 'M'];
+    // var subgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
+    var subgroups = zsubgroups;
+    var isSex = false;
+    if(subgroups[0] === 'F' && subgroups[1] === 'M')
+        isSex = true;
+        else
+        isSex = false;
+
     var xSubgroup = d3.scaleBand()
         .domain(subgroups)
         .range([0, x.bandwidth()])
@@ -684,9 +692,10 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .rangeRound([height - margin.bottom, margin.top]);
     y.domain([0, d3.max(groupedData, function (d) { return d.val; })]).nice();
     svg.append("g")
-        .attr("transform", "t ranslate(" + margin.left + ",0)")
+        .attr("transform", "translate(" + margin.left + ",0)")
         .call(d3.axisLeft(y));
 
+    // TODO: compute statistics!!!
     // Show the bars
     svg.append("g")
         .selectAll("g")
@@ -704,14 +713,15 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
             //     var kky = (d.sex === "female")? "F" : "M";
             //     return { key: kky, value: d.val }; }); 
 
-            var kky = (d.sex === "female")? "F" : "M";
+            // var kky = (d.sex === "female")? "F" : "M";
+            var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.age;
             var newD = [{key: kky, value: d.val }];
-            console.log(newD);
+            // console.log(newD);
                 return newD;
         })
         .enter().append("rect")
         .attr("x", function (d) {
-            console.log(d); 
+            // console.log(d); 
             return xSubgroup(d.key); })
         .attr("y", function (d) { return y(d.value); })
         .attr("width", xSubgroup.bandwidth())
@@ -719,7 +729,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .attr("fill", function (d) { return g_colormapGroups(d.key); });
 
     // // Add individual points with jitter
-    var jitterWidth = 50;
+    var jitterWidth = xSubgroup.bandwidth()*0.8;//50;
     svg.append("g")
         .selectAll("g")
         .data(groupedData)
@@ -734,7 +744,8 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
             //     // console.log(kky);
             //     var kky = (d.sex === "female")? "F" : "M";
             //     return { key: kky, value: d.val }; }); 
-                var kky = (d.sex === "female")? "F" : "M";
+                // var kky = (d.sex === "female")? "F" : "M";
+                var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.age;
                 var newD = [{key: kky, value: d.val }];
                 // console.log(newD);
                     return newD;
@@ -887,9 +898,18 @@ function redrawAll()
    })
    .style("opacity", "1");
 
-   // update the bar charts
-   d3.select("#barchart").remove();
-   drawBarcharts(g_tpmMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
+//    // update the bar charts
+//    d3.select("#barchart").remove();
+//    drawBarcharts(g_tpmMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
+
+   d3.select("#dotplotSex").remove();
+   drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#barchartView", 
+   g_dpwidth, g_dpheight, g_margin);
+
+   d3.selectAll("#dotplotAge").remove();
+   var ageSubgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
+   drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotAge", "#dotplotView", 
+   g_dpwidth, g_dpheight, g_margin, ageSubgroups);
 
    // update the text 
 //    d3.select("#rnaInfoText")
@@ -943,7 +963,11 @@ function rnaViewerMain()
         // .property("selected", function(d){ return d.Symbol === g_tpmMeanVal[g_selectedRow]; });
         
         // 3. setup barchart
-        drawBarcharts(g_tpmMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
+        // drawBarcharts(g_tpmMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
+       
+        // draw dotplots?
+        // drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplot", "#barchartView", 
+        // g_dpwidth, g_dpheight, g_margin);
     });
 
     // 4. load the full data
@@ -969,7 +993,11 @@ function rnaViewerMain()
         g_tpmSubInfo = data2;
         
         // draw the dotplot
+        var ageSubgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
+        drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotAge", "#dotplotView", 
+        g_dpwidth, g_dpheight, g_margin, ageSubgroups);
 
-        drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplot", "#dotplotView", g_dpwidth, g_dpheight, g_margin);
+        drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#barchartView", 
+        g_dpwidth, g_dpheight, g_margin);
     })
 }

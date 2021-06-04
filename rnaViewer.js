@@ -1,5 +1,5 @@
 // global variables
-var g_margin = { left: 20, right: 20, top: 30, bottom: 30 };
+var g_margin = { left: 20, right: 20, top: 10, bottom: 10 };
 
 // bar charts
 var g_bcwidth = 1200;
@@ -40,8 +40,8 @@ var g_selectedData = null;
 // [101-501）
 // [501，+∞）
 var g_colormapThres = [0, 3, 6, 11, 26, 51, 101, 501];
-var g_colormapGroups = d3.scaleOrdinal(d3.schemePuOr[11]);
-
+// var g_colormapGroups = d3.scaleOrdinal(d3.schemePuOr[11]);
+var g_colormapGroups = d3.scaleOrdinal(d3.schemeTableau10);
 // function drawTable() {
 //     var tableFname = "Result-MedicalTable.csv";
 //     d3.csv(tableFname, function (error, data) {
@@ -494,7 +494,7 @@ function setupSearchView(g_tpmMeanVal, className, divName, width, height, margin
     .attr("x", 10)
     .attr("y", 20)
     .text(function(){
-        var info = g_tpmMeanVal[g_selectedRow].Symbol + " is found. Read more by clicking the sources below.";
+        var info = g_tpmMeanVal[g_selectedRow].Symbol + " is found. Read more by clicking tags below.";
         return info;
     })
     ;
@@ -624,11 +624,12 @@ function doSearch() {
 
 function drawDotplots(data, subjectInfoData, className, divName, width, height, margin, zsubgroups=['F','M'])
 {
+    if (data == [] || data == null)
+        return;
   // append the svg object to the body of the page
   var svg = d3.select(divName)
   .append("svg")
   .attr('class', className)
-  .attr('id', className)
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
   .append("g")
@@ -636,7 +637,6 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
       "translate(" + margin.left + "," + margin.top + ")");
 
     var groups = g_tpmMeanVal.columns.slice(1);
-    var selectedData = data;
     // X axis
     var x = d3.scaleBand()
         .range([0, width])
@@ -659,9 +659,9 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
     // var subgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
     var subgroups = zsubgroups;
     var isSex = false;
-    if(subgroups[0] === 'F' && subgroups[1] === 'M')
+    if (subgroups[0] === 'F' && subgroups[1] === 'M')
         isSex = true;
-        else
+    else
         isSex = false;
 
     var xSubgroup = d3.scaleBand()
@@ -671,6 +671,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
 
     // Group the data into subgroups
     var groupedData = [];
+    var groups = [];
     var dkeys = d3.keys(data).slice(1);
     for(var i = 0; i < dkeys.length; i++)
     {
@@ -682,9 +683,10 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
             continue;
         // console.log(info);
         var datum = {val: data[dkeys[i]], group: info[0].location, age: info[0].age, sex: info[0].sex};
+        groups.push(datum.group);
         groupedData.push(datum);
-
     }
+    var uniqueGroups = d3.set(groups).values();
     // Add Y axis
     var y = d3.scaleLinear()
         // .domain([0, d3.max(selectedData, function(d){return d3.max(d.val);})]).nice()
@@ -696,40 +698,143 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .call(d3.axisLeft(y));
 
     // TODO: compute statistics!!!
-    // Show the bars
-    svg.append("g")
-        .selectAll("g")
-        // Enter in data = loop group per group
-        .data(groupedData)
+    // Record subgrouped data
+    var subgroupedData = Array(uniqueGroups.length);
+    var groupedSumStat = Array(uniqueGroups.length);
+    for(var i = 0; i < subgroupedData.length; i++){
+        subgroupedData[i]  = [];
+        groupedSumStat[i] = [];
+    }
+
+    // Grouped bars (just for reference!)
+    // svg.append("g")
+    //     .selectAll("g")
+    //     // Enter in data = loop group per group
+    //     .data(groupedData)
+    //     .enter()
+    //     .append("g")
+    //     .attr("class", "subgroupedBars")
+    //     .attr("transform", function (d) { return "translate(" + x(d.group) + ",0)"; })
+    //     .selectAll("rect")
+    //     .data(function (d) { 
+    //         // console.log(d);
+    //         // var newD = subgroups.map(function () {
+    //         //     // console.log(kky);
+    //         //     var kky = (d.sex === "female")? "F" : "M";
+    //         //     return { key: kky, value: d.val }; }); 
+
+    //         // var kky = (d.sex === "female")? "F" : "M";
+    //         var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.age;
+    //         var newD = [{key: kky, value: d.val }];
+    //         subgroupedData.push({key: kky, value: d.val });
+    //         // console.log(newD);
+    //             return newD;
+    //     })
+    //     .enter().append("rect")
+    //     .attr("x", function (d) {
+    //         // console.log(d); 
+    //         return xSubgroup(d.key); })
+    //     .attr("y", function (d) { return y(d.value); })
+    //     .attr("width", xSubgroup.bandwidth())
+    //     .attr("height", function (d) { return y(0) - y(d.value); })
+    //     .attr("fill", function (d) { return g_colormapGroups(d.key); });
+
+    for(var i = 0; i < groupedData.length; i++)
+    {
+        var d = groupedData[i];
+        
+        var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.age;
+        var id  = uniqueGroups.indexOf(d.group);
+        subgroupedData[id].push({key: kky, value: d.val });
+    }
+    // compute grouped stats
+
+    for(var i = 0; i < subgroupedData.length;i++){
+        var sumstat = d3.nest()
+        .key(function(d) {return d.key;})
+        .rollup(function(d){
+            q1 = d3.quantile(d.map(function(g) { return g.value;}).sort(d3.ascending),.25);
+            median = d3.quantile(d.map(function(g) { return g.value;}).sort(d3.ascending),.5);
+            q3 = d3.quantile(d.map(function(g) { return g.value;}).sort(d3.ascending),.75);
+            interQuantileRange = q3 - q1;
+            min = d3.min(d.map(function(g) { return g.value;}));//q1 - 1.5 * interQuantileRange;
+            max = d3.max(d.map(function(g) { return g.value;}));//q3 + 1.5 * interQuantileRange;
+            return({q1: q1, median: median, q3: q3, interQuantileRange: interQuantileRange, min: min, max: max});
+        })
+        .entries(subgroupedData[i]);
+        // console.log(sumstat);
+        groupedSumStat[i] = sumstat;
+    }
+
+    // draw the boxplot
+    // Show the main vertical line
+    svg
+        .selectAll("bpVertLines")
+        .data(groupedSumStat)
         .enter()
         .append("g")
-        .attr("class", "subgroupedBars")
-        .attr("transform", function (d) { return "translate(" + x(d.group) + ",0)"; })
-        .selectAll("rect")
-        .data(function (d) { 
+        .attr("class", "bpVertLines")
+        .attr("transform", function (d,i) { return "translate(" + x(uniqueGroups[i]) + ",0)"; })
+        .selectAll("line")
+        .data(function(d){
             // console.log(d);
-            // var newD = subgroups.map(function () {
-            //     // console.log(kky);
-            //     var kky = (d.sex === "female")? "F" : "M";
-            //     return { key: kky, value: d.val }; }); 
+            return d;
+        })
+        .enter().append("line")
+        .attr("y1", function (d) {
+            // console.log(d);
+            return (y(d.value.min));
+        })
+        .attr("y2", function (d) { return (y(d.value.max)) })
+        .attr("x1", function (d) { return (xSubgroup(d.key) + xSubgroup.bandwidth()
+             / 2) })
+        .attr("x2", function (d) { return (xSubgroup(d.key) + xSubgroup.bandwidth() / 2) })
+        .attr("stroke", "black")
+        .style("width", 40);
 
-            // var kky = (d.sex === "female")? "F" : "M";
-            var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.age;
-            var newD = [{key: kky, value: d.val }];
-            // console.log(newD);
-                return newD;
+
+    // rectangle for the main box
+    svg
+        .selectAll("bpBoxes")
+        .data(groupedSumStat)
+        .enter()
+        .append("g")
+        .attr("class", "bpBoxes")
+        .attr("transform", function (d,i) { return "translate(" + x(uniqueGroups[i]) + ",0)"; })
+        .selectAll("rect")
+        .data(function(d){
+            // console.log(d);
+            return d;
         })
         .enter().append("rect")
-        .attr("x", function (d) {
-            // console.log(d); 
-            return xSubgroup(d.key); })
-        .attr("y", function (d) { return y(d.value); })
-        .attr("width", xSubgroup.bandwidth())
-        .attr("height", function (d) { return y(0) - y(d.value); })
-        .attr("fill", function (d) { return g_colormapGroups(d.key); });
+        .attr("y", function (d) { return (y(d.value.q3)) }) // console.log(x(d.value.q1)) ;
+        .attr("height", function (d) { ; return Math.abs(y(d.value.q3) - y(d.value.q1)) }) //console.log(x(d.value.q3)-x(d.value.q1))
+        .attr("x", function (d) { return xSubgroup(d.key); })
+        .attr("width", xSubgroup.bandwidth() * 0.8)
+        .attr("stroke", "black")
+        .style("fill", function (d) { return (g_colormapGroups(d.key)) })
+        .style("opacity", 0.3)
 
+    // Show the median
+    svg
+        .selectAll("bpMedianLines")
+        .data(groupedSumStat)
+        .enter()
+        .append("g")
+        .attr("class", "bpMedianLines")
+        .attr("transform", function (d,i) { return "translate(" + x(uniqueGroups[i]) + ",0)"; })
+        .selectAll("line")
+        .data(function(d){return d;})
+        .enter().append("line")
+        .attr("x1", function (d) { return (xSubgroup(d.key) ) })
+        .attr("x2", function (d) { return (xSubgroup(d.key) + 0.8*xSubgroup.bandwidth()) })
+        .attr("y1", function (d) { return (y(d.value.median)) })
+        .attr("y2", function (d) { return (y(d.value.median)) })
+        .attr("stroke", "black")
+        .style("width", 80);
+        
     // // Add individual points with jitter
-    var jitterWidth = xSubgroup.bandwidth()*0.8;//50;
+    var jitterWidth = xSubgroup.bandwidth()*0.7;//50;
     svg.append("g")
         .selectAll("g")
         .data(groupedData)
@@ -801,7 +906,7 @@ function drawBarcharts(data, selectedRow, className, divName, width, height, mar
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
     var keys = data.columns.slice(1);
-    console.log(keys);
+    // console.log(keys);
     var selectedData = data[selectedRow];
     // X axis
     var x = d3.scaleBand()
@@ -896,26 +1001,31 @@ function redrawAll()
        var val = g_tpmMeanVal[g_selectedRow].PalmSole;
        return g_exprValColorMap(val);
    })
-   .style("opacity", "1");
+        .style("opacity", "1");
 
-//    // update the bar charts
-//    d3.select("#barchart").remove();
-//    drawBarcharts(g_tpmMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
+    // update the text 
+    //    d3.select("#rnaInfoText")
+    //    .text(function() {return g_tpmMeanVal[g_selectedRow].Symbol; });
+    d3.select(".rnaInfoSvg").remove();
+    setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
 
-   d3.select("#dotplotSex").remove();
-   drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#barchartView", 
-   g_dpwidth, g_dpheight, g_margin);
+    //    // update the bar charts
+    //    d3.select("#barchart").remove();
+    //    drawBarcharts(g_tpmMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
 
-   d3.selectAll("#dotplotAge").remove();
-   var ageSubgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
-   drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotAge", "#dotplotView", 
-   g_dpwidth, g_dpheight, g_margin, ageSubgroups);
+    // Return if tpmFullData is not ready
+    if (g_tpmFullData == [])
+        return;
+    d3.select(".dotplotSex").remove();
+    drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#barchartView",
+        g_dpwidth, g_dpheight, g_margin);
 
-   // update the text 
-//    d3.select("#rnaInfoText")
-//    .text(function() {return g_tpmMeanVal[g_selectedRow].Symbol; });
-   d3.select(".rnaInfoSvg").remove();
-   setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
+    d3.selectAll(".dotplotAge").remove();
+    var ageSubgroups = ['0_10', '11_20', '21_30', '31_40', '41_50', '51_60', '61_70', 'over70'];
+    drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotAge", "#dotplotView",
+        g_dpwidth, g_dpheight, g_margin, ageSubgroups);
+
+
 }
 
 function exprValColormap(){

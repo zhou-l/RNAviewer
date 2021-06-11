@@ -48,7 +48,7 @@ var g_colormapGroups = d3.scaleOrdinal(d3.schemeTableau10);
 //         if (error) throw error;
 
 //         var sortAscending = true;
-//         var table = d3.select('#page-wrap').append('table');
+//         var table = d3.select('#pageGroup-wrap').append('table');
 
 
 //         var dimensions = {};
@@ -147,7 +147,7 @@ function drawBodyView(data, className, divName, width, height, margin)
     .attr("height", height + margin.top + margin.bottom)
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");;
 
-    var svg_img=  svg.append('svg:image')
+    var svg_img=  svg.append('svg:imageGroup')
                     .attr('x','0')
                     .attr('y','0');
     var logoUrl = "./data/body.png";
@@ -626,7 +626,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
 {
     if (data == [] || data == null)
         return;
-  // append the svg object to the body of the page
+  // append the svg object to the body of the pageGroup
   var svg = d3.select(divName)
   .append("svg")
   .attr('class', className)
@@ -682,7 +682,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         if(info.length != 1)
             continue;
         // console.log(info);
-        var datum = {val: data[dkeys[i]], group: info[0].location, age: info[0].age, sex: info[0].sex};
+        var datum = {val: data[dkeys[i]], group: info[0].location, ageGroup: info[0].ageGroup, sex: info[0].sex};
         groups.push(datum.group);
         groupedData.push(datum);
     }
@@ -724,7 +724,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
     //         //     return { key: kky, value: d.val }; }); 
 
     //         // var kky = (d.sex === "female")? "F" : "M";
-    //         var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.age;
+    //         var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.ageGroup;
     //         var newD = [{key: kky, value: d.val }];
     //         subgroupedData.push({key: kky, value: d.val });
     //         // console.log(newD);
@@ -743,7 +743,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
     {
         var d = groupedData[i];
         
-        var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.age;
+        var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.ageGroup;
         var id  = uniqueGroups.indexOf(d.group);
         subgroupedData[id].push({key: kky, value: d.val });
     }
@@ -850,7 +850,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
             //     var kky = (d.sex === "female")? "F" : "M";
             //     return { key: kky, value: d.val }; }); 
                 // var kky = (d.sex === "female")? "F" : "M";
-                var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.age;
+                var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.ageGroup;
                 var newD = [{key: kky, value: d.val }];
                 // console.log(newD);
                     return newD;
@@ -893,9 +893,121 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .style("alignment-baseline", "middle")
 }
 
+function drawLinechart(data, subjectInfoData, className, divName, width, height, margin, zsubgroups=['F','M'])
+{
+    if (data == [] || data == null)
+        return;
+  // append the svg object to the body of the page
+  var svg = d3.select(divName)
+  .append("svg")
+  .attr('class', className)
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform",
+      "translate(" + margin.left + "," + margin.top + ")");
+
+    var groups = g_tpmMeanVal.columns.slice(1);
+    // X axis
+    var x = d3.scaleLinear()
+        .range([0, width]);
+    x.domain([0, 100]).nice();
+      
+    var xAxis = d3.axisBottom(x).ticks(20);
+
+    svg.append("g")            // Add the X Axis
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .style("fill", "none")
+      .call(xAxis);
+
+    var y = d3.scaleLinear().range([height, 0]);
+    var yAxis = d3.axisLeft(y).ticks(5);
+
+
+    // Another scale for subgroup position?
+    // var subgroups = ['F', 'M'];
+    // var subgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
+
+    // Group the data into subgroups
+    var groupedData = [];
+    var groups = [];
+    var dkeys = d3.keys(data).slice(1);
+    for(var i = 0; i < dkeys.length; i++)
+    {
+        // console.log(dkeys[i]);
+        // Find the key in the subjectInfo data
+        var info = subjectInfoData.filter(function(d) { 
+            return d.id === dkeys[i];});
+        if(info.length != 1)
+            continue;
+        // console.log(info);
+        var datum = {val: data[dkeys[i]], group: info[0].location, age: +info[0].age, sex: info[0].sex};
+        groups.push(datum.group);
+        groupedData.push(datum);
+    }
+
+    var uniqueGroups = d3.set(groups).values();
+    // Add Y axis
+    var y = d3.scaleLinear()
+        // .domain([0, d3.max(selectedData, function(d){return d3.max(d.val);})]).nice()
+        .range([height, 0])
+        .rangeRound([height - margin.bottom, margin.top]);
+    y.domain([0, d3.max(groupedData, function (d) { return d.val; })]).nice();
+    svg.append("g")
+        .attr("class", "y axis")
+        .attr("transform", "translate(" + margin.left + ",0)")
+        .style("stroke", "steelblue")
+        .style("fill", "none")
+        .call(yAxis);
+    // generate subgrouped data for each location
+    var subgroupedData = Array(uniqueGroups.length);
+    for (var i = 0; i < subgroupedData.length; i++) {
+        subgroupedData[i] = [];
+
+    }
+    for (var i = 0; i < groupedData.length; i++) {
+        var d = groupedData[i];
+        var id = uniqueGroups.indexOf(d.group);
+        subgroupedData[id].push({ age: d.age, val: d.val });
+    }
+
+    // Sort by age
+    for(var i  = 0; i < subgroupedData.length; i++){
+        subgroupedData[i].sort(function(x,y){return d3.ascending(x.age, y.age);});
+    }
+    // draw a line for each location
+    for (var i = 0; i < subgroupedData.length; i++) {
+        var valueline = d3.line()
+            .x(function (d) { return x(d.age); })
+            .y(function (d) { return y(d.val); });
+        var lineData = subgroupedData[i];
+        svg.append("path")
+            .datum(lineData)
+            .attr("class", "line")
+            .attr("d", valueline)
+            .attr("stroke", function(){return g_colormapGroups(i);})
+            .style("fill", "none");
+    }
+        // Draw legends
+        
+    var ww = 14;
+    svg.append("g").selectAll("labelsRect")
+        .data(uniqueGroups)
+        .enter()
+        .append("rect")
+        .attr("width", ww)
+        .attr("height", ww)
+        .attr("x", width-50)
+        .attr("y", function (d, i) { return 20 + i * 25 - ww / 2; })
+        .style("fill", function (d, i) {
+            return g_colormapGroups(d);
+        })
+}
+
 function drawBarcharts(data, selectedRow, className, divName, width, height, margin)
 {
-    // append the svg object to the body of the page
+    // append the svg object to the body of the pageGroup
     var svg = d3.select(divName)
         .append("svg")
         .attr('class', className)
@@ -1020,18 +1132,22 @@ function redrawAll()
     drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#barchartView",
         g_dpwidth, g_dpheight, g_margin);
 
-    d3.selectAll(".dotplotAge").remove();
-    var ageSubgroups = ['0_10', '11_20', '21_30', '31_40', '41_50', '51_60', '61_70', 'over70'];
-    drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotAge", "#dotplotView",
-        g_dpwidth, g_dpheight, g_margin, ageSubgroups);
+    d3.selectAll(".dotplotageGroup").remove();
+    var ageGroupSubgroups = ['0_10', '11_20', '21_30', '31_40', '41_50', '51_60', '61_70', 'over70'];
+    drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotageGroup", "#dotplotView",
+        g_dpwidth, g_dpheight, g_margin, ageGroupSubgroups);
 
+    d3.selectAll(".linechartViewAge").remove();
+    drawLinechart(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "linechartViewAge", "#linechartView",
+        g_dpwidth, g_dpheight, g_margin);
 
 }
 
 function exprValColormap(){
     var colormap = d3.scaleThreshold()
     .domain([0,3,6,11,26,51,101,501,1000000])
-    .range( d3.schemeYlOrRd[9]);
+    // .range( d3.schemeYlOrRd[9]);
+    .range(d3.schemeTableau10)
     return colormap;
 }
 
@@ -1103,11 +1219,14 @@ function rnaViewerMain()
         g_tpmSubInfo = data2;
         
         // draw the dotplot
-        var ageSubgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
-        drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotAge", "#dotplotView", 
-        g_dpwidth, g_dpheight, g_margin, ageSubgroups);
+        var ageGroupSubgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
+        drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotageGroup", "#dotplotView", 
+        g_dpwidth, g_dpheight, g_margin, ageGroupSubgroups);
 
         drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#barchartView", 
+        g_dpwidth, g_dpheight, g_margin);
+
+        drawLinechart(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "linechartViewAge", "#linechartView", 
         g_dpwidth, g_dpheight, g_margin);
     })
 }

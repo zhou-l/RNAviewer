@@ -30,6 +30,21 @@ var g_sgheight = 300;
 var g_selectedRow = 0;
 var g_selectedData = null;
 
+// Language setting
+var g_isEnglish = false;
+var g_posTranslate = [
+    {"cn":"头颈",
+     "en":"HeadNeck"},
+     {"cn":"四肢",
+     "en":"Extremities"},
+     {"cn":"掌跖",
+     "en":"PalmSole"},
+     {"cn":"躯干",
+     "en":"Body"},
+     {"cn":"外阴",
+     "en":"Perinaeum"}
+];
+
 // // colormap range of the body viewer
 // [0-3）
 // [3-6）
@@ -135,7 +150,11 @@ var g_colormapGroups = d3.scaleOrdinal(d3.schemeTableau10);
 //     });
 // }
 
-  
+var tooltip = d3.select("#bodyView")
+.append("div")
+.attr("id", "tooltip");
+// .text("This is a tooltip");
+
 function drawBodyView(data, className, divName, width, height, margin)
 {
 
@@ -147,7 +166,7 @@ function drawBodyView(data, className, divName, width, height, margin)
     .attr("height", height + margin.top + margin.bottom)
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");;
 
-    var svg_img=  svg.append('svg:imageGroup')
+    var svg_img=  svg.append('svg:image')
                     .attr('x','0')
                     .attr('y','0');
     var logoUrl = "./data/body.png";
@@ -184,8 +203,12 @@ function drawBodyView(data, className, divName, width, height, margin)
         if(i < g_colormapThres.length-1)
             thres = "["+d+","+g_colormapThres[i+1]+")"; 
         else
-            thres = "["+d+",+inf)";
-
+        {
+            if(g_isEnglish)
+                thres = "["+d+",+inf)";
+            else
+                thres = "["+d+",无穷)";
+        }
         return thres;
       })
       .attr("text-anchor", "left")
@@ -494,7 +517,11 @@ function setupSearchView(g_tpmMeanVal, className, divName, width, height, margin
     .attr("x", 10)
     .attr("y", 20)
     .text(function(){
-        var info = g_tpmMeanVal[g_selectedRow].Symbol + " is found. Read more by clicking tags below.";
+        var info = null;
+        if (g_isEnglish)
+            info = g_tpmMeanVal[g_selectedRow].Symbol + " is found. Read more by clicking tags below.";
+        else
+            info = g_tpmMeanVal[g_selectedRow].Symbol + " 已被找到.点击下边的标签获取其他网站中关于此RNA的信息.";
         return info;
     })
     ;
@@ -622,7 +649,7 @@ function doSearch() {
     }
   }
 
-function drawDotplots(data, subjectInfoData, className, divName, width, height, margin, zsubgroups=['F','M'])
+function drawDotplots(data, subjectInfoData, className, divName, width, height, margin, zsubgroups=['F','M'], zisLog = true)
 {
     if (data == [] || data == null)
         return;
@@ -637,6 +664,18 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
       "translate(" + margin.left + "," + margin.top + ")");
 
     var groups = g_tpmMeanVal.columns.slice(1);
+    var xtxtGroups = [];
+    if(g_isEnglish)
+    {
+        xtxtGroups = groups;
+    }
+    else
+    {
+        for(var i = 0; i < g_posTranslate.length; i++){
+            if(groups[i] === g_posTranslate[i].en)
+                xtxtGroups.push(g_posTranslate[i].cn);
+        } 
+    }
     // X axis
     var x = d3.scaleBand()
         .range([0, width])
@@ -647,7 +686,22 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .padding(0.2);
     svg.append("g")
         .attr("transform", "translate(0," + (height - margin.bottom) + ")")
-        .call(d3.axisBottom(x))
+        .call(d3.axisBottom(x).tickFormat(function(d,i){
+            if(g_isEnglish)
+            {
+               return d;
+            }
+            else
+            {
+                for(var i = 0; i < g_posTranslate.length; i++){
+                    if(d === g_posTranslate[i].en)
+                    {
+                          return g_posTranslate[i].cn;
+                    }
+                } 
+            }
+        }
+        ))
         .selectAll("text")
         //  .attr("transform", "translate(10,0)")
         .style("text-anchor", "center");
@@ -658,6 +712,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
     // var subgroups = ['F', 'M'];
     // var subgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
     var subgroups = zsubgroups;
+    var isLog = zisLog;
     var isSex = false;
     if (subgroups[0] === 'F' && subgroups[1] === 'M')
         isSex = true;
@@ -688,13 +743,28 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
     }
     var uniqueGroups = d3.set(groups).values();
     // Add Y axis
-    var y = d3.scaleLinear()
-        // .domain([0, d3.max(selectedData, function(d){return d3.max(d.val);})]).nice()
-        .range([height, 0])
+    // Linear or Log scale?
+    var y = null;
+    if (isLog)
+        y = d3.scaleLog()//d3.scaleLinear();
+    else
+        y = d3.scaleLinear();
+    // .domain([0, d3.max(selectedData, function(d){return d3.max(d.val);})]).nice()
+    y.range([height, 0])
         .rangeRound([height - margin.bottom, margin.top]);
-    y.domain([0, d3.max(groupedData, function (d) { return d.val; })]).nice();
+  // If log 
+   
+   var ydelta = isLog? 0.0001 : 0;
+//    y.domain([0, d3.max(groupedData, function (d) { return d.val; })]).nice();
+    var ymax =  d3.max(groupedData, function (d) { return d.val; });
+    var ymin =  d3.min(groupedData, function (d) { return d.val; });
+    console.log(ymax);
+    // If log 
+    y.domain([ymin+ydelta, ymax+ydelta ]).nice();
+
     svg.append("g")
         .attr("transform", "translate(" + margin.left + ",0)")
+        // .call(d3.axisLeft(y).ticks(5).tickFormat(d3.format('.2f')));
         .call(d3.axisLeft(y));
 
     // TODO: compute statistics!!!
@@ -783,9 +853,10 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .enter().append("line")
         .attr("y1", function (d) {
             // console.log(d);
-            return (y(d.value.min));
+            return (y(d.value.min+ydelta));
         })
-        .attr("y2", function (d) { return (y(d.value.max)) })
+        // .attr("y2", function (d) { return (y(d.value.max)) })
+        .attr("y2", function (d) { return (y(d.value.max+ydelta)) })
         .attr("x1", function (d) { return (xSubgroup(d.key) + xSubgroup.bandwidth()
              / 2) })
         .attr("x2", function (d) { return (xSubgroup(d.key) + xSubgroup.bandwidth() / 2) })
@@ -807,12 +878,23 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
             return d;
         })
         .enter().append("rect")
-        .attr("y", function (d) { return (y(d.value.q3)) }) // console.log(x(d.value.q1)) ;
-        .attr("height", function (d) { ; return Math.abs(y(d.value.q3) - y(d.value.q1)) }) //console.log(x(d.value.q3)-x(d.value.q1))
+        // .attr("y", function (d) { return (y(d.value.q3)) }) // console.log(x(d.value.q1)) ;
+        .attr("y", function (d) { return (y(d.value.q3+ydelta)) }) // console.log(x(d.value.q1)) ;
+        // .attr("height", function (d) { ; return Math.abs(y(d.value.q3) - y(d.value.q1)) }) //console.log(x(d.value.q3)-x(d.value.q1))
+        .attr("height", function (d) { ; return Math.abs(y(d.value.q3+ydelta) - y(d.value.q1+ydelta)) }) //console.log(x(d.value.q3)-x(d.value.q1))
         .attr("x", function (d) { return xSubgroup(d.key); })
         .attr("width", xSubgroup.bandwidth() * 0.8)
         .attr("stroke", "black")
-        .style("fill", function (d) { return (g_colormapGroups(d.key)) })
+        .style("fill", function (d) { 
+            if (subgroups.length == 2) {
+                if (d.key == 'F')
+                    return "steelblue";
+                else
+                    return "coral";
+            }
+            else
+                return (g_colormapGroups(d.key));
+         })
         .style("opacity", 0.3)
 
     // Show the median
@@ -828,13 +910,15 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .enter().append("line")
         .attr("x1", function (d) { return (xSubgroup(d.key) ) })
         .attr("x2", function (d) { return (xSubgroup(d.key) + 0.8*xSubgroup.bandwidth()) })
-        .attr("y1", function (d) { return (y(d.value.median)) })
-        .attr("y2", function (d) { return (y(d.value.median)) })
+        // .attr("y1", function (d) { return (y(d.value.median)) })
+        // .attr("y2", function (d) { return (y(d.value.median)) })
+        .attr("y1", function (d) { return (y(d.value.median+ydelta)) })
+        .attr("y2", function (d) { return (y(d.value.median+ydelta)) })
         .attr("stroke", "black")
         .style("width", 80);
         
     // // Add individual points with jitter
-    var jitterWidth = xSubgroup.bandwidth()*0.7;//50;
+    var jitterWidth = xSubgroup.bandwidth() * 0.7;//50;
     svg.append("g")
         .selectAll("g")
         .data(groupedData)
@@ -843,28 +927,29 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .attr("class", "subgroupedDots")
         .attr("transform", function (d) { return "translate(" + x(d.group) + ",0)"; })
         .selectAll("circle")
-        .data(function (d) { 
+        .data(function (d) {
             // console.log(d);
             // return subgroups.map(function () {
             //     // console.log(kky);
             //     var kky = (d.sex === "female")? "F" : "M";
             //     return { key: kky, value: d.val }; }); 
-                // var kky = (d.sex === "female")? "F" : "M";
-                var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.ageGroup;
-                var newD = [{key: kky, value: d.val }];
-                // console.log(newD);
-                    return newD;
+            // var kky = (d.sex === "female")? "F" : "M";
+            var kky = (isSex) ? ((d.sex === "female") ? "F" : "M") : d.ageGroup;
+            var newD = [{ key: kky, value: d.val }];
+            // console.log(newD);
+            return newD;
         })
         .enter().append("circle")
-        .attr("cx", function (d) { return ( xSubgroup(d.key)+ (xSubgroup.bandwidth() / 2) - jitterWidth / 2 + Math.random() * jitterWidth) })
-        .attr("cy", function (d) { return y(d.value); })
+        .attr("cx", function (d) { return (xSubgroup(d.key) + (xSubgroup.bandwidth() / 2) - jitterWidth / 2 + Math.random() * jitterWidth) })
+        // .attr("cy", function (d) { return y(d.value); })
+        .attr("cy", function (d) { return y(d.value + ydelta); })
         .attr("r", 4)
         .style("fill", function (d) { return (g_colormapGroups(d.key)) })
         .attr("stroke", "white")
 
 
-        // Draw legends
-        
+    // Draw legends
+
     var ww = 14;
     svg.append("g").selectAll("labelsRect")
         .data(subgroups)
@@ -872,10 +957,18 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .append("rect")
         .attr("width", ww)
         .attr("height", ww)
-        .attr("x", width-50)
+        .attr("x", width - 50)
         .attr("y", function (d, i) { return 20 + i * 25 - ww / 2; })
         .style("fill", function (d, i) {
-            return g_colormapGroups(d);
+
+            if (subgroups.length == 2) {
+                if (d == 'F')
+                    return "steelblue";
+                else
+                    return "coral";
+            }
+            else
+                return (g_colormapGroups(d));
         })
 
     svg.append("g").selectAll("labels")
@@ -883,7 +976,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .enter()
         .append("text")
         .style("font-size", "12px")
-        .attr("x", width-30)
+        .attr("x", width - 30)
         .attr("y", function (d, i) { return 20 + i * 25; }) // 100 is where the first dot appears. 25 is the distance between dots
         // .style("fill", function (d,i) { return gDefaultColRange(i); })
         .text(function (d) {
@@ -893,7 +986,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .style("alignment-baseline", "middle")
 }
 
-function drawLinechart(data, subjectInfoData, className, divName, width, height, margin, zsubgroups=['F','M'])
+function drawLinechart(data, subjectInfoData, className, divName, width, height, margin, zsubgroups=['F','M'],zisLog = true)
 {
     if (data == [] || data == null)
         return;
@@ -911,19 +1004,15 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
     // X axis
     var x = d3.scaleLinear()
         .range([0, width]);
-    x.domain([0, 100]).nice();
+    x.domain([0, 90]).nice();
       
     var xAxis = d3.axisBottom(x).ticks(20);
 
     svg.append("g")            // Add the X Axis
       .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", "translate(0," + (height - margin.bottom) + ")")
       .style("fill", "none")
       .call(xAxis);
-
-    var y = d3.scaleLinear().range([height, 0]);
-    var yAxis = d3.axisLeft(y).ticks(5);
-
 
     // Another scale for subgroup position?
     // var subgroups = ['F', 'M'];
@@ -949,11 +1038,22 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
 
     var uniqueGroups = d3.set(groups).values();
     // Add Y axis
-    var y = d3.scaleLinear()
+    var isLog = zisLog;
+    var y = null;
+    var ydelta = isLog? 1e-4:0;
+    if(isLog)
+        y = d3.scaleLog();
+    else
+        y = d3.scaleLinear();
         // .domain([0, d3.max(selectedData, function(d){return d3.max(d.val);})]).nice()
-        .range([height, 0])
+    y.range([height, 0])
         .rangeRound([height - margin.bottom, margin.top]);
-    y.domain([0, d3.max(groupedData, function (d) { return d.val; })]).nice();
+    y.domain([d3.min(groupedData, function (d) { return d.val; })+ydelta, 
+        d3.max(groupedData, function (d) { return d.val; })+ydelta]).nice();
+
+
+    var yAxis = d3.axisLeft(y).ticks(5);
+
     svg.append("g")
         .attr("class", "y axis")
         .attr("transform", "translate(" + margin.left + ",0)")
@@ -980,7 +1080,7 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
     for (var i = 0; i < subgroupedData.length; i++) {
         var valueline = d3.line()
             .x(function (d) { return x(d.age); })
-            .y(function (d) { return y(d.val); });
+            .y(function (d) { return y(d.val+ydelta); });
         var lineData = subgroupedData[i];
         svg.append("path")
             .datum(lineData)
@@ -998,11 +1098,35 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
         .append("rect")
         .attr("width", ww)
         .attr("height", ww)
-        .attr("x", width-50)
+        .attr("x", width-70)
         .attr("y", function (d, i) { return 20 + i * 25 - ww / 2; })
         .style("fill", function (d, i) {
-            return g_colormapGroups(d);
+            return g_colormapGroups(i);
         })
+
+        
+    svg.append("g").selectAll("labels")
+    .data(uniqueGroups)
+    .enter()
+    .append("text")
+    .style("font-size", "12px")
+    .attr("x", width-50)
+    .attr("y", function (d, i) { return 20 + i * 25; }) // 100 is where the first dot appears. 25 is the distance between dots
+    // .style("fill", function (d,i) { return gDefaultColRange(i); })
+    .text(function (d) {
+        
+        for(var i = 0; i < g_posTranslate.length; i++){
+            if(d===g_posTranslate[i].en){
+                if(g_isEnglish)
+                    return d;
+                else
+                    return g_posTranslate[i].cn;
+            }
+        }
+        return d;
+    })
+    .attr("text-anchor", "left")
+    .style("alignment-baseline", "middle")
 }
 
 function drawBarcharts(data, selectedRow, className, divName, width, height, margin)
@@ -1078,42 +1202,156 @@ function redrawAll()
     if(g_selectedRow < 0 || g_selectedRow >= g_tpmMeanVal.length)
     return;
 
+
     // update the body view
-   const bodyView = d3.select("#bodyView");
-   var partHeadNeck = bodyView.selectAll("#pathHeadNeck")
-   .style("fill", function(){
+    var selectedData = g_tpmMeanVal[g_selectedRow];
+    const bodyView = d3.select("#bodyView");
+    var partHeadNeck = bodyView.selectAll("#pathHeadNeck")
+    .style("fill", function(){
        var val = g_tpmMeanVal[g_selectedRow].HeadNeck;
        return g_exprValColorMap(val);
-   })
-   .style("opacity", "1");
+    })
+    .style("opacity", "1")
+    .on("mousemove", function(d) {
+        tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
+    })
+    .on("mouseover", function(d) {
+        if(g_isEnglish)
+            tooltip.text(`HeadNeck: ${selectedData.HeadNeck}`);
+        else
+            tooltip.text(`头颈: ${selectedData.HeadNeck}`);
+        tooltip.style("visibility", "visible");
+    })
+    .on("mouseout", function(d) {
+        tooltip.style("visibility", "hidden");
+    });
 
-   var partExtremities = bodyView.selectAll("#pathExtremities")
-   .style("fill", function(){
+    var partExtremities = bodyView.selectAll("#pathExtremities")
+    .style("fill", function(){
        var val = g_tpmMeanVal[g_selectedRow].Extremities;
        return g_exprValColorMap(val);
-   })
-   .style("opacity", "1");
+    })
+    .style("opacity", "1")
+    .on("mousemove", function(d) {
+        tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
+    })
+    .on("mouseover", function(d) {
+        if(g_isEnglish)
+            tooltip.text(`Extremities: ${selectedData.Extremities}`);
+        else
+            tooltip.text(`四肢: ${selectedData.Extremities}`);
+        tooltip.style("visibility", "visible");
+    })
+    .on("mouseout", function(d) {
+        tooltip.style("visibility", "hidden");
+    });
+    // -------------------------------------------
 
-   var partPerinaeum = bodyView.selectAll("#pathPerinaeum")
-   .style("fill", function(){
+    var partPerinaeum = bodyView.selectAll("#pathPerinaeum")
+    .style("fill", function(){
        var val = g_tpmMeanVal[g_selectedRow].Perinaeum;
        return g_exprValColorMap(val);
-   })
-   .style("opacity", "1");
+    })
+    .style("opacity", "1")
+       // 把这一部分复制粘贴到其他部位即可
+    .on("mousemove", function(d) {
+        tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
+    })
+    .on("mouseover", function(d) {
+        if(g_isEnglish)
+            tooltip.text(`Perinaeum: ${selectedData.Perinaeum}`);
+        else
+            tooltip.text(`外阴: ${selectedData.Perinaeum}`);
 
-   var partBody = bodyView.selectAll("#pathBody")
-   .style("fill", function(){
+        tooltip.style("visibility", "visible");
+    })
+    .on("mouseout", function(d) {
+        tooltip.style("visibility", "hidden");
+    });
+    // -------------------------------------------
+
+
+    var partBody = bodyView.selectAll("#pathBody")
+    .style("fill", function(){
        var val = g_tpmMeanVal[g_selectedRow].Body;
        return g_exprValColorMap(val);
-   })
-   .style("opacity", "1");
+    })
+    .style("opacity", "1")
+    // 把这一部分复制粘贴到其他部位即可
+    .on("mousemove", function(d) {
+        tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
+    })
+    .on("mouseover", function(d) {
+        if(g_isEnglish)
+            tooltip.text(`Body: ${selectedData.Body}`);
+        else
+            tooltip.text(`躯干: ${selectedData.Body}`);
 
-   var partPalmSole = bodyView.selectAll("#pathPalmSole")
-   .style("fill", function(){
+        tooltip.style("visibility", "visible");
+    })
+    .on("mouseout", function(d) {
+        tooltip.style("visibility", "hidden");
+    });
+    // -------------------------------------------
+
+    var partPalmSole = bodyView.selectAll("#pathPalmSole")
+    .style("fill", function(){
        var val = g_tpmMeanVal[g_selectedRow].PalmSole;
        return g_exprValColorMap(val);
-   })
-        .style("opacity", "1");
+    })
+    .style("opacity", "1")
+    // 把这一部分复制粘贴到其他部位即可
+    .on("mousemove", function(d) {
+        tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
+    })
+    .on("mouseover", function(d) {
+        if(g_isEnglish)
+            tooltip.text(`PalmSole: ${selectedData.PalmSole}`);
+        else
+             tooltip.text(`掌跖: ${selectedData.PalmSole}`);
+
+        tooltip.style("visibility", "visible");
+    })
+    .on("mouseout", function(d) {
+        tooltip.style("visibility", "hidden");
+    });
+
+//     // update the body view
+//    const bodyView = d3.select("#bodyView");
+//    var partHeadNeck = bodyView.selectAll("#pathHeadNeck")
+//    .style("fill", function(){
+//        var val = g_tpmMeanVal[g_selectedRow].HeadNeck;
+//        return g_exprValColorMap(val);
+//    })
+//    .style("opacity", "1");
+
+//    var partExtremities = bodyView.selectAll("#pathExtremities")
+//    .style("fill", function(){
+//        var val = g_tpmMeanVal[g_selectedRow].Extremities;
+//        return g_exprValColorMap(val);
+//    })
+//    .style("opacity", "1");
+
+//    var partPerinaeum = bodyView.selectAll("#pathPerinaeum")
+//    .style("fill", function(){
+//        var val = g_tpmMeanVal[g_selectedRow].Perinaeum;
+//        return g_exprValColorMap(val);
+//    })
+//    .style("opacity", "1");
+
+//    var partBody = bodyView.selectAll("#pathBody")
+//    .style("fill", function(){
+//        var val = g_tpmMeanVal[g_selectedRow].Body;
+//        return g_exprValColorMap(val);
+//    })
+//    .style("opacity", "1");
+
+//    var partPalmSole = bodyView.selectAll("#pathPalmSole")
+//    .style("fill", function(){
+//        var val = g_tpmMeanVal[g_selectedRow].PalmSole;
+//        return g_exprValColorMap(val);
+//    })
+//         .style("opacity", "1");
 
     // update the text 
     //    d3.select("#rnaInfoText")
@@ -1147,16 +1385,49 @@ function exprValColormap(){
     var colormap = d3.scaleThreshold()
     .domain([0,3,6,11,26,51,101,501,1000000])
     // .range( d3.schemeYlOrRd[9]);
-    .range(d3.schemeTableau10)
+    // .range(d3.schemeTableau10)
+    .range(d3.schemeSet3)
     return colormap;
 }
 
+function toNextStage(msg, state)
+{
+     
+    d3.select("#content").remove();   
+    d3.select("#headText")
+    .style("font-size", "20px")
+    .text("");
+
+    d3.select("body").select("#infoTextTut")
+    .style("font-size", "20px")
+    .text(msg);
+    d3.select("body").select("#infoTextIntro")
+    .style("font-size", "20px")
+    .text(msg);
+    switch(state)
+    {
+        case 0:
+        d3.select("#NextIntro")
+        .on("click", welcome.click.introNext());
+        break;
+        case 1:
+        d3.select("#NextTut")
+        .on("click", welcome.click.tutorialNext());
+        break;
+    }
+}
 
 
 function rnaViewerMain()
 {
     // g_exprValColorMap = d3.scaleOrdinal(d3.schemeYlOrRd[5]);
     // g_exprValColorMap = d3.scaleSequential(d3.interpolateYlOrRd);
+    if(g_isEnglish)
+        d3.select("#rnaSearchButton").text("Search");
+    else
+    {
+        d3.select("#rnaSearchButton").text("搜索");
+    }
 
     g_exprValColorMap = exprValColormap();
     g_selectedRow = 0;

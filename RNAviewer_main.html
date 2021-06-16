@@ -9,23 +9,22 @@
 <script src="d3.v4.min.js"></script>
 <script src="d3-scale-chromatic.min.js"></script>
 <script src="d3-color.min.js"></script>
+
 <!-- <script src="welcome.js"></script> -->
 <!-- <script src="image-outline-min.js"></script>
 <script src="require.js"></script> -->
 
 
 <body>
-<!-- <div class = "w3-top">
+<div class = "w3-top">
     <div class="w3-white w3-xlarge" syle="max-width:1200px; margin:auto">
-            <div id="quitBut" class="w3-left w3-padding-12">
-                <a href="./byebye.html">Quit</a>
-            </div>
-            <div id="headText" class="w3-center w3-padding-12">
-                    <h2><b>Skin RNA Viewer</b></h2>
-             </div>
+  
+				<button id="langSwitchButt"class="w3-left w3-padding-12">中文/English</button>
+
     </div>        
-</div> -->
+</div>
 			<div id="headText" class="w3-center w3-padding-12">
+				<h2><b>皮肤RNA视图</b></h2>
 				<h2><b>Skin RNA Viewer</b></h2>
 			</div>
 <hr id="intro">
@@ -140,7 +139,7 @@ table {
 		<div class="row">
 			<div id="rnaInfoArea" class=" w3-container w3-cell column" style="width:500px;height:600px;">
 
-                <textarea id="rnaSearchBox" placeholder="search an RNA, for example, A1BG" style="width:400px;position:absolute;top:150px;"></textarea>
+                <textarea id="rnaSearchBox" placeholder="输入RNA进行搜素，例如, A1BG" style="width:400px;position:absolute;top:150px;"></textarea>
                 <button id="rnaSearchButton" style="position:relative;top:150px;left:400px">Search</button>
 				<div id = "rnaInfo" style="width:500px; height:400px"></div>
 

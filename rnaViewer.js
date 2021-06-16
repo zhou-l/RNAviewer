@@ -191,6 +191,7 @@ function drawBodyView(data, className, divName, width, height, margin)
       .data(g_colormapThres)
       .enter()
       .append("text")
+      .attr("class","legendLabels")
       .style("font-size", "12px")
       .attr("x", width-25)
       .attr("y", function (d, i) { 
@@ -1031,7 +1032,7 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
         if(info.length != 1)
             continue;
         // console.log(info);
-        var datum = {val: data[dkeys[i]], group: info[0].location, age: +info[0].age, sex: info[0].sex};
+        var datum = {val: +data[dkeys[i]], group: info[0].location, age: +info[0].age, sex: info[0].sex};
         groups.push(datum.group);
         groupedData.push(datum);
     }
@@ -1078,17 +1079,49 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
     }
     // draw a line for each location
     for (var i = 0; i < subgroupedData.length; i++) {
-        var valueline = d3.line()
-            .x(function (d) { return x(d.age); })
-            .y(function (d) { return y(d.val+ydelta); });
+        // var valueline = d3.line()
+        //     .x(function (d) { return x(d.age); })
+        //     .y(function (d) { return y(d.val+ydelta); });
+        // do regression
+        
+
+        var valueline = [];
+        valueline = d3.line().defined(d => !isNaN(d.val))
+            .x(d => x(d.age))
+            .y(d => y(d.val + ydelta));
+
         var lineData = subgroupedData[i];
+        svg.append("path")
+        .datum(lineData.filter(valueline.defined()))
+        .attr("stroke", "#ccc")
+        .attr("d", valueline)
+        .style("fill", "none");
+
         svg.append("path")
             .datum(lineData)
             .attr("class", "line")
             .attr("d", valueline)
             .attr("stroke", function(){return g_colormapGroups(i);})
             .style("fill", "none");
+
+        var circleNode = svg.selectAll("line-circle")
+            .data(lineData)
+            .enter();
+        circleNode.append("circle")
+            .attr("class", "data-circle")
+            .attr("r", 5)
+            .attr("cx", function (d) { return x(d.age); })
+            .attr("cy", function (d) {
+                return y(d.val+ydelta);
+            })
+            .style("fill", function () {
+                if (d.val > 0.0)
+                return g_colormapGroups(i);
+            else
+                return "none";
+            });
     }
+
         // Draw legends
         
     var ww = 14;
@@ -1201,7 +1234,19 @@ function redrawAll()
 {
     if(g_selectedRow < 0 || g_selectedRow >= g_tpmMeanVal.length)
     return;
+    // Update UI
+    if(g_isEnglish){
+        d3.select("#rnaSearchButton").text("Search");
+        d3.select("#rnaSearchBox").attr("placeholder","search an RNA, for example, A1BG");
 
+    }
+    else
+    {
+        d3.select("#rnaSearchButton").text("搜索");
+        d3.select("#rnaSearchBox")
+        .attr("placeholder","输入RNA进行搜素，例如, A1BG");
+    }
+   
 
     // update the body view
     var selectedData = g_tpmMeanVal[g_selectedRow];
@@ -1316,6 +1361,28 @@ function redrawAll()
         tooltip.style("visibility", "hidden");
     });
 
+     // Update legends
+
+     bodyView.selectAll(".legendLabels")
+   .data(g_colormapThres)
+   // .style("fill", function (d,i) { return gDefaultColRange(i); })
+   .text(function (d, i) {
+       //   var newStr = d.replace(/ *\（[^)]*\） */g, "");
+       //    return newStr; 
+       var thres = null;
+       if (i < g_colormapThres.length - 1)
+           thres = "[" + d + "," + g_colormapThres[i + 1] + ")";
+       else {
+           if (g_isEnglish)
+               thres = "[" + d + ",+inf)";
+           else
+               thres = "[" + d + ",无穷)";
+       }
+       return thres;
+   })
+   .attr("text-anchor", "left")
+   .style("alignment-baseline", "middle");
+
 //     // update the body view
 //    const bodyView = d3.select("#bodyView");
 //    var partHeadNeck = bodyView.selectAll("#pathHeadNeck")
@@ -1422,12 +1489,13 @@ function rnaViewerMain()
 {
     // g_exprValColorMap = d3.scaleOrdinal(d3.schemeYlOrRd[5]);
     // g_exprValColorMap = d3.scaleSequential(d3.interpolateYlOrRd);
-    if(g_isEnglish)
-        d3.select("#rnaSearchButton").text("Search");
-    else
-    {
-        d3.select("#rnaSearchButton").text("搜索");
-    }
+
+
+    // Language swtich button
+    d3.select("#langSwitchButt").on("click", function (d) {
+        g_isEnglish = !g_isEnglish;
+        redrawAll();
+      });
 
     g_exprValColorMap = exprValColormap();
     g_selectedRow = 0;

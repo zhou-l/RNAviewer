@@ -1,0 +1,199 @@
+<!doctype html>
+
+<head>
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+</head>
+<title>Skin RNA Viewer</title>
+<link rel="stylesheet" href="w3.css">
+<script src="d3.v4.min.js"></script>
+<!-- <script src="welcome.js"></script> -->
+<!-- <script src="image-outline-min.js"></script>
+<script src="require.js"></script> -->
+
+
+<body>
+	<div class="w3-top">
+		<div class="w3-white w3-xlarge" syle="max-width:1200px; margin:auto">
+
+			<button id="langSwitchButt" class="w3-left w3-padding-12">中文/English</button>
+
+		</div>
+	</div>
+	<div id="headText" class="w3-center w3-padding-12">
+		<h2><b>皮肤RNA视图</b></h2>
+		<h2><b>Skin RNA Viewer</b></h2>
+	</div>
+	<hr id="intro">
+	<!-- <div class="w3-container w3-padding-16 w3-center" style="margin-top:50px">
+        <div id="introText" class="text" text-align="center">
+                <p>Please estimate the angle of the major direction of these samples from the four scatterplots at the bottom.</p>
+            </div>
+        <div id="infoText" class="text" text-align="center">   </div>
+</div> -->
+	<style>
+		table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+
+		/* Zebra striping */
+		tr:nth-of-type(odd) {
+			background: #eee;
+		}
+
+		th {
+			background: #333;
+			color: white;
+			font-weight: bold;
+			cursor: s-resize;
+			background-repeat: no-repeat;
+			background-position: 3% center;
+		}
+
+		td,
+		th {
+			padding: 6px;
+			border: 1px solid #ccc;
+			text-align: left;
+		}
+
+		th.des:after {
+			content: "\21E9";
+		}
+
+		th.aes:after {
+			content: "\21E7";
+		}
+
+		.scroll {
+			overflow: auto;
+		}
+
+		path {
+			stroke-linejoin: round;
+			stroke-miterlimit: 2;
+			stroke-linecap: round;
+		}
+
+		/* 
+	Max width before this PARTICULAR table gets nasty
+	This query will take effect for any screen smaller than 760px
+	and also iPads specifically.
+	*/
+		@media only screen and (max-width: 760px),
+		(min-device-width: 500px) and (max-device-width: 500px) {
+
+			/* Force table to not be like tables anymore */
+			table,
+			thead,
+			tbody,
+			th,
+			td,
+			tr {
+				display: block;
+			}
+
+			/* Hide table headers (but not display: none;, for accessibility) */
+			thead tr {
+				position: absolute;
+				top: -9999px;
+				left: -9999px;
+			}
+
+			tr {
+				border: 1px solid #FFFFFF;
+			}
+
+			td {
+				/* Behave  like a "row" */
+				border: none;
+				border-bottom: 1px solid #FFFFFF;
+				position: relative;
+				padding-left: 50%;
+			}
+
+			td:before {
+				/* Now like a table header */
+				position: absolute;
+				/* Top/left values mimic padding */
+				top: 6px;
+				left: 6px;
+				width: 45%;
+				padding-right: 10px;
+				white-space: nowrap;
+				background-color: white;
+			}
+
+			/*
+		Label the data
+		*/
+			td:before {
+				content: attr(data-th) ": ";
+				font-weight: bold;
+				width: 6.5em;
+				display: inline-block;
+			}
+		}
+
+		li {
+			display: inline-block;
+			min-width: 80px;
+			padding: 10px;
+			background-color: #eee;
+			margin: 0;
+		}
+
+		ul {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+		}
+	</style>
+
+	<div id="VAcanvas" class=" w3-content w3-mobile  " style=" height:1600px;width:1200px">
+		<!-- <div class = "w3-cell-row"> -->
+
+
+		<div class="row">
+			<div id="rnaInfoArea" class=" w3-container w3-cell column" style="width:500px;height:300px;">
+                <div class = "input-group" id="quick_search">
+                    <input id="welcomePage_rnaSearchBox" placeholder="输入RNA进行搜素，例如, A1BG"
+					style="width:400px;position:absolute;top:150px;"></input>
+                    <span>
+                        <a href="./RNAviewer_main.html" id="welcomePage_rnaSearchButton" style="position:relative;left:420px">
+                        <button>
+                            Search
+
+                        </button>
+                        </a>
+                    </span>
+                </div>
+			</div>
+            <div id="projInfo" class=" w3-container w3-cell column" style="width:400px;height:600px;">
+                项目介绍
+                北京京大学第一医院皮肤性病成立于1915年，是北大医院第一批成立的科室，迄今已有百年历史，其间名家辈出，是中国现代西医皮肤科的引领力量之一。2002年经教育部批准成为国家重点学科后，学科建设更是面临前所未有的发展机遇，全体同仁齐心协力，奋力拼搏，在学科建设、团队建设、人才培养、科学研究、学术交流及条件建设等方面都取得了令人瞩目的成绩，已成为名符其实的国内一流、国际接轨的皮肤性病学医疗、教学与研究基地。
+                　　1名医荟萃(famous doctors)                
+                　　北大医院皮肤科目前出诊正高职11人，副高职7人，主治2人，退休教授3人。现有四位博士生导师，主治医师全部具有博士学位。
+            </div>
+		</div>
+        <div class="row ">
+			<div id="reference" class="w3-container w3-cell-row" style="width:1200px;height:400px;">
+            参考文献
+            参考文献参考文献参考文献
+            参考文献参考文献参考文献
+            参考文献参考文献
+            </div>
+			<div id="citeinfo" class="w3-container w3-cell-row" style="width:1200px;height:400px;">引用格式
+                引用格式引用格式引用格式引用格式
+                </div>
+		</div>
+	</div>
+
+
+</body>
+
+<script src="welcomePage.js"></script>
+<script>
+	rnaWelcomePage();
+</script>

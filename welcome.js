@@ -149,7 +149,7 @@ welcome.section.start =
     'value="Start!" onclick="welcome.click.start()"> </p>' +
     '</div>' +
     '</div>';
-//Page 2 第二页 PARTICIPANT INFORMATION STATEMENT的文字信息以及一个按键
+
 welcome.section.consent =
     '	<!-- ####################### Consent ####################### -->' +
     '	<div class="consent" style="display:none; width:1000px">' +
@@ -173,12 +173,11 @@ welcome.section.consent =
     '			By continuing, you are making a decision whether or not to participate.  Clicking the button below indicates that, having read the information provided on the participant information sheet, you have decided to participate.' +
     '			<br>' +
     '			<p align="center">' +
-// i agree 的按键
     '           <input type="button" id="consentButton" class="consent jspsych-btn" value="I agree" onclick="welcome.click.consent()" >' +
     '			</p>' +
     '			<p>To withdraw your consent, simply close the browser tab and return the HIT. Your data will be deleted from our records.</p>' +
     '		</div><br><br></div>';
-//Page 3 第三页 Demographic information
+    
 welcome.section.demographics = 
  '	<!-- ####################### Demographics ####################### -->' +
     '	<div class="demographics" style="display:none; align:center; width: 1000px" onload = "setDemographicsPage();">' +
@@ -189,11 +188,11 @@ welcome.section.demographics =
     '                information about your Amazon ID. As long as you finish the experiment you will get ' +
     '                paid no matter what you put here, so please be honest.</p><br>' +
     '<form method="post" id="myForm" name="myForm">'+
-    '			<!-- Gender -->' +//性别信息，一个选择按钮
+    '			<!-- Gender -->' +
     '           <label for="gender"><b>Gender: &nbsp;</b></label>' +
     '           <input type="radio" name="gender" value="male"/> Male &nbsp; ' +
     '           <input type="radio" name="gender" value="female" /> Female &nbsp;' +
-    '			<!-- Age -->' +//空白输入框，输入年龄
+    '			<!-- Age -->' +
     '           <label for="age"><b>Age: &nbsp;</b></label><input id="age" name="age" required />' +
     '		<!-- Demographics  button -->' +
     '        <p align="center">' +
@@ -220,7 +219,7 @@ welcome.section.demographics =
     '                        id="colorblindtestButton" value="Start! >" disabled title="please fill in the number you see" ' +
     '                       onclick="welcome.click.colorblindTest()">' +
     '       </p></div></div>';
-//Page 4 第四页 Introduction 介绍如何参加测试
+
     welcome.section.introduction = 
     '<div class="introduction" style="display:none;width: 1000px" >'+
     '<div id = "top" class = "w3-top">'+
@@ -230,7 +229,7 @@ welcome.section.demographics =
     '        </div>'+
     '        <div id="nextBut" class="w3-right w3-padding-16">To continue:'+
     '                <button id="NextIntro" class="button" type="button">Next</button>'+
-    '            </div>'+p
+    '            </div>'+
     '        <div id="headText" class="w3-center w3-padding-16">'+
     '                <h2><b>Introduction</b></h2>'+
     '         </div>'+
@@ -247,7 +246,7 @@ welcome.section.demographics =
     '       <div id="infoTextIntro" class="text" text-align="center">'+
     // '            <p>'+welcome.intro.blurb+'</p>'+
     '   </div>'+
-    '</div>'+// Introduction第二页
+    '</div>'+
     '<div id = "content" class="w3-main w3-content w3-center"style="max-width:1200px;">'+
     '        <h3>The scatterplot:</h3>'+
     '        <div id="exampleSC" class="w3-row-padding w3-center" style="width:1200px;height:300px;">'+
@@ -256,7 +255,7 @@ welcome.section.demographics =
     '        <div id="examplePC" class=" w3-row-padding w3-center parcoords" style="width:1200px;height:410px;"></div>'+       
     '</div></div>';
 
-    ///finish the intro
+    
     welcome.section.introEnd = 
     '	<!-- ####################### introEnd ####################### -->' +
     '<div class="introEnd" style="display:none;align:center; width: 1000px">' +
@@ -270,7 +269,7 @@ welcome.section.demographics =
     '			</p>' +
     '</div>'+
     '</div>';
-//finished the tutorial
+
     welcome.section.tutEnd = 
     '	<!-- ####################### tutEnd ####################### -->' +
     '<div class="tutEnd" style="display:none;align:center; width: 1000px">' +
@@ -287,7 +286,7 @@ welcome.section.demographics =
     '</div>'+
     '</div>';
 
-//Tutorial Progress
+
     welcome.section.tutorial = 
     '<div class="tutorial" style="display:none;width: 1000px">'+
     '<div id = "top" class = "w3-top">'+
@@ -327,8 +326,7 @@ welcome.section.demographics =
     '        <div id="exampleSC" class="w3-row-padding w3-center" style="width:1200px;height:300px;">'+
     '        </div>'+        
     '</div></div>';
-    
-//actual study 
+
     welcome.section.study = 
     '<div class="study" style="display:none;width: 1000px">'+
     '<div id = "topStu" class = "w3-top">'+

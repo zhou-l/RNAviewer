@@ -20,7 +20,8 @@ function rnaWelcomePage() {
     var butY = 50;
     holder.append("a")
         .attr("xlink:href", function (d) {
-            return "./RNAviewer_main.html";
+            var rnaName = d3.select("#welcomePage_rnaSearchBox").text();
+            return "./RNAviewer_main.html?rna="+rnaName;
         })
         .append("rect")
         .attr("x", butX)
@@ -66,8 +67,14 @@ function rnaWelcomePage() {
         .style("pointer-events", "none")
         .text("Quit");
 
-    // d3.select("#welcomePage_rnaSearchButton")
-    //   .on("click", function () {
-    //     return "./RNAviewer_main.html";
+    d3.select("#welcomePage_rnaSearchButton")
+      .on("click", function () {
+        var rnaSearchBox = d3.select("#welcomePage_rnaSearchBox");
+        var rnaName = rnaSearchBox.property("value");
+        var urlName = "./RNAviewer_main.html?rna="+rnaName;
+        // console.log(urlName);
+        window.location.replace(urlName);
+        // window.location.reload();
+        // window.location.reload(true);
     });
 }

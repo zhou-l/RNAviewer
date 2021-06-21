@@ -498,7 +498,7 @@ function drawBodyView(data, className, divName, width, height, margin)
 
 function setupSearchView(g_tpmMeanVal, className, divName, width, height, margin)
 {
-    
+    d3.selectAll(".rnaInfoSvg").remove();
     var svg = d3.select("#rnaInfo")
     .append("svg")
     .attr("class","rnaInfoSvg")
@@ -638,6 +638,25 @@ function doSearch() {
     for(var i = 0; i < g_tpmMeanVal.length; i++)
     {
         if(g_tpmMeanVal[i].Symbol.toLowerCase() === txtName.value.toLowerCase())
+        {
+            if(i != g_selectedRow){
+                g_selectedRow = i;
+                g_selectedData = g_tpmMeanVal[g_selectedRow];
+                console.log("found!");
+                redrawAll();
+            }
+            return;
+        }
+    }
+  }
+
+  function doSearch(searchTerm) {
+    var txtName = searchTerm;
+    console.log(txtName);
+    // do a simple traversal, for now
+    for(var i = 0; i < g_tpmMeanVal.length; i++)
+    {
+        if(g_tpmMeanVal[i].Symbol.toLowerCase() === txtName.toLowerCase())
         {
             if(i != g_selectedRow){
                 g_selectedRow = i;
@@ -1423,7 +1442,7 @@ function redrawAll()
     // update the text 
     //    d3.select("#rnaInfoText")
     //    .text(function() {return g_tpmMeanVal[g_selectedRow].Symbol; });
-    d3.select(".rnaInfoSvg").remove();
+    d3.selectAll(".rnaInfoSvg").remove();
     setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
 
     //    // update the bar charts
@@ -1487,9 +1506,14 @@ function toNextStage(msg, state)
 
 function rnaViewerMain()
 {
+    g_exprValColorMap = exprValColormap();
+    g_selectedRow = 0;
+    // Get search term if jumped from elsewhere
+    var currentSearchString = new URLSearchParams(window.location.search);
+    var searchedRNA = currentSearchString.get("rna");
+    console.log(searchedRNA);
     // g_exprValColorMap = d3.scaleOrdinal(d3.schemeYlOrRd[5]);
     // g_exprValColorMap = d3.scaleSequential(d3.interpolateYlOrRd);
-
 
     // Language swtich button
     d3.select("#langSwitchButt").on("click", function (d) {
@@ -1497,8 +1521,7 @@ function rnaViewerMain()
         redrawAll();
       });
 
-    g_exprValColorMap = exprValColormap();
-    g_selectedRow = 0;
+
     // 0. set up views  
     // drawBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
     // 0.load data
@@ -1512,6 +1535,11 @@ function rnaViewerMain()
             data[i].Perinaeum = +data[i].Perinaeum;
         }
         g_tpmMeanVal = data;
+
+
+
+        if (searchedRNA != "A1BG")
+            doSearch(searchedRNA);
 
         // 1.setup views
         drawBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
@@ -1567,5 +1595,6 @@ function rnaViewerMain()
 
         drawLinechart(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "linechartViewAge", "#linechartView", 
         g_dpwidth, g_dpheight, g_margin);
+
     })
 }

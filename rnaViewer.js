@@ -1589,7 +1589,9 @@ function rnaViewerMain()
     // 0. set up views  
     // drawBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
     // 0.load data
-    d3.csv("./data/tpm_meanVal.csv", function(data){
+    // d3.csv("./data/tpm_meanVal.csv", function(data)
+    d3.csv("./data/tpm0612_meanVal.csv", function(data)
+    {
         for(var i = 0; i < data.length; i++)
         {
             data[i].symbol = data[i].symbol;

@@ -1,3 +1,5 @@
+
+
 // global variables
 var g_margin = { left: 20, right: 20, top: 10, bottom: 10 };
 
@@ -650,7 +652,7 @@ function doSearch() {
     }
   }
 
-  function doSearch(searchTerm) {
+  function doSearchFromProg(searchTerm) {
     var txtName = searchTerm;
     console.log(txtName);
     // do a simple traversal, for now
@@ -1097,31 +1099,61 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
         subgroupedData[i].sort(function(x,y){return d3.ascending(x.age, y.age);});
     }
     // draw a line for each location
+
     for (var i = 0; i < subgroupedData.length; i++) {
         // var valueline = d3.line()
         //     .x(function (d) { return x(d.age); })
         //     .y(function (d) { return y(d.val+ydelta); });
         // do regression
         
-
+     
         var valueline = [];
         valueline = d3.line().defined(d => !isNaN(d.val))
             .x(d => x(d.age))
             .y(d => y(d.val + ydelta));
 
+        // RegressionF
         var lineData = subgroupedData[i];
+        var formatedData = subgroupedData[i].map(function(d){return [d.age, d.val]});
+        var polyReg = regression('polynomial', formatedData, 2);
+        var polyRegEq = "Poly: y = " + polyReg.equation[2].toFixed(4) + "x^2 + " + polyReg.equation[1].toFixed(4) + "x + " + polyReg.equation[0].toFixed(2) + ", r2 = " + polyReg.r2.toFixed(3);
+        var regressedLine = regEquationToCurve("polynomial",formatedData, polyReg);
+        var regline = d3.line()
+        // .interpolate("basis")
+        .x(function(d) { return x(d.x); })
+        .y(function(d) { return y(d.y); })
+        .curve(d3.curveNatural);
+
+        // Draw regression line?
+        // svg.append("path")
+        // .datum(lineData.filter(valueline.defined()))
+        // .attr("stroke", "#ccc")
+        // .attr("d", valueline)
+        // .style("fill", "none");
+
+        // svg.append("path")
+        //     .datum(lineData)
+        //     .attr("class", "line")
+        //     .attr("d", valueline)
+        //     .attr("stroke", function(){return g_colormapGroups(i);})
+        //     .style("fill", "none");
+
         svg.append("path")
         .datum(lineData.filter(valueline.defined()))
         .attr("stroke", "#ccc")
+        .attr("stroke-width", 0.5)
         .attr("d", valueline)
         .style("fill", "none");
 
         svg.append("path")
-            .datum(lineData)
+            .datum(regressedLine.values)
             .attr("class", "line")
-            .attr("d", valueline)
+            .attr("d", regline)
+            .attr("stroke-width", 2)
+            // .attr("d", function(d){return regline(d);})
             .attr("stroke", function(){return g_colormapGroups(i);})
             .style("fill", "none");
+
 
         var circleNode = svg.selectAll("line-circle")
             .data(lineData)
@@ -1179,6 +1211,38 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
     })
     .attr("text-anchor", "left")
     .style("alignment-baseline", "middle")
+}
+
+function regEquationToCurve(name, data, regEq)
+{
+    var regressedLine = {
+        name: name,
+        values: function() {
+        var extrapolatedPts = [];
+        for(var i = 0; i < data.length; i++){
+            var val = data[i][0];
+            switch(name){
+            case "polynomial":
+                // regEq.equation[3] * val*val*val + 
+                extrapolatedPts.push({x: val, y: regEq.equation[2] * val*val + regEq.equation[1] * val + regEq.equation[0]});
+                break;
+            case "exponential":
+                extrapolatedPts.push({x: val, y: regEq.equation[0] * Math.exp(val * regEq.equation[1])}); //or use numbers.js per https://gist.github.com/zikes/4279121, var regression = numbers.statistic.exponentialRegression(pts);
+                break;
+            case "power":
+                extrapolatedPts.push({x: val, y: regEq.equation[0] * Math.pow(val,regEq.equation[1])});
+                break;
+            case "logarithmic":
+                extrapolatedPts.push({x: val, y: regEq.equation[0] + regEq.equation[1] * Math.log(val)});
+                break;
+            case "linear":
+            default:
+                extrapolatedPts.push({x: val, y: regEq.equation[0] * val + regEq.equation[1]});
+            }
+        }
+        return extrapolatedPts;
+    }()};
+    return regressedLine;  
 }
 
 function drawBarcharts(data, selectedRow, className, divName, width, height, margin)
@@ -1538,8 +1602,8 @@ function rnaViewerMain()
 
 
 
-        if (searchedRNA != "A1BG")
-            doSearch(searchedRNA);
+        if (searchedRNA != "A1BG" && searchedRNA != null)
+            doSearchFromProg(searchedRNA);
 
         // 1.setup views
         drawBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
@@ -1565,8 +1629,9 @@ function rnaViewerMain()
 
     // 4. load the full data
  d3.queue()
-    .defer(d3.csv, "./data/tpm_full.csv")
-    .defer(d3.csv, "./data/subjectInfo.csv")
+    // .defer(d3.csv, "./data/tpm_full.csv")
+    .defer(d3.csv, "./data/TPM0612.csv")
+    .defer(d3.csv, "./data/subjectInfo_new.csv")
     .await(function(error, data1, data2){
         if(error) throw error;
 

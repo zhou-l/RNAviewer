@@ -1,4 +1,6 @@
-
+// NOTE:
+// We need to convert body images paths before we can use them!!!
+// We currently use the "image-outline" package as an NPM package to convert them!!!
 
 // global variables
 var g_margin = { left: 20, right: 20, top: 10, bottom: 10 };
@@ -14,16 +16,19 @@ var g_dpheight = 400;
 // body view
 var g_bvwidth = 400;
 var g_bvheight= 600;
-var g_orgBodyImgWidth = 493;
-var g_orgBodyImgHeight = 1125;
+var g_orgBodyImgWidth = 3508;
+var g_orgBodyImgHeight = 4961;
 
 // global data
 var g_tpmMeanVal = [];
 var g_tpmFullData = [];
 var g_tpmSubInfo = [];
 var g_exprValColorMap = [];
-var g_pathFiles = ['./data/pathHeadNeck.txt','./data/pathLegs.txt','./data/pathTorso.txt',
-'./data/pathPerinaeum.txt','./data/pathArmsHands.txt'];
+// var g_pathFiles = ['./data/pathHeadNeck.txt','./data/pathLegs.txt','./data/pathTorso.txt',
+// './data/pathPerinaeum.txt','./data/pathArmsHands.txt'];
+var g_pathFiles = ['./data/imagePaths/female/pathHeadNeck.txt','./data/imagePaths/female/pathLegs.txt',
+'./data/imagePaths/female/pathTorso.txt',
+'./data/imagePaths/female/pathPerinaeum.txt','./data/imagePaths/female/pathArmsHands.txt'];
 
 var g_sgwidth = 1400;
 var g_sgLegendWidth = 100;
@@ -157,7 +162,7 @@ var tooltip = d3.select("#bodyView")
 .attr("id", "tooltip");
 // .text("This is a tooltip");
 
-function drawBodyView(data, className, divName, width, height, margin)
+function drawFemaleBodyView(data, className, divName, width, height, margin)
 {
 
     var svg = d3.select(divName)
@@ -171,7 +176,349 @@ function drawBodyView(data, className, divName, width, height, margin)
     var svg_img=  svg.append('svg:image')
                     .attr('x','0')
                     .attr('y','0');
-    var logoUrl = "./data/body.png";
+    var logoUrl = "./data/female_body.png";
+    svg_img.attr('height', height)
+        .attr('width', width)
+        .attr('xlink:href', logoUrl)
+        .attr("fill", "black")
+        .style('stroke', '#AAA')
+        .style("opacity",1)
+        ;
+
+    var parts = [1, 2, 3, 4];
+
+    var testVal = [0.11, 5, 8, 20, 30, 80, 200, 599];
+    var nodeParts = svg.selectAll(".legend")
+    .data(testVal)
+    .enter()
+    .append("circle")
+    .attr("class", "bodyParts")
+    .attr("id",function(d,i){return i;})
+    .attr("r",10)
+    .attr("cx", function(d,i){return width - 35;})
+    .attr("cy", function(d,i){return 20 + 25*i;})
+    .style("fill", function(d,i){return g_exprValColorMap(d)})
+    ;
+
+    svg.append("g").selectAll(".legendLabels")
+      .data(g_colormapThres)
+      .enter()
+      .append("text")
+      .attr("class","legendLabels")
+      .style("font-size", "12px")
+      .attr("x", width-25)
+      .attr("y", function (d, i) { 
+          return 20 + i * 25; }) // 100 is where the first dot appears. 25 is the distance between dots
+      // .style("fill", function (d,i) { return gDefaultColRange(i); })
+      .text(function (d, i) { 
+        //   var newStr = d.replace(/ *\（[^)]*\） */g, "");
+        //    return newStr; 
+        var thres = null;
+        if(i < g_colormapThres.length-1)
+            thres = "["+d+","+g_colormapThres[i+1]+")"; 
+        else
+        {
+            if(g_isEnglish)
+                thres = "["+d+",+inf)";
+            else
+                thres = "["+d+",无穷)";
+        }
+        return thres;
+      })
+      .attr("text-anchor", "left")
+      .style("alignment-baseline", "middle")
+
+
+    // Draw parts
+    // Warning: All body parts are transformed to correct positions with hard coded transformation information
+    // TODO: figure out what went wrong!
+    var parts = [1];//[1,2,3,4,5];
+    var nodePartSilhouette = svg.append("g").attr("class", "bodyShape");
+    var allPathData = [];
+    var xscale = width/g_orgBodyImgWidth;
+    var yscale = height/g_orgBodyImgHeight;
+
+    // console.log(g_tpmMeanVal[g_selectedRow]);
+
+    d3.queue()
+    .defer(d3.csv, "./data/imagePaths/female/pathPalmSole1.txt")
+    .defer(d3.csv, "./data/imagePaths/female/pathPalmSole2.txt")
+    .defer(d3.csv, "./data/imagePaths/female/pathPalmSole3.txt")
+    .defer(d3.csv, "./data/imagePaths/female/pathPalmSole4.txt")
+    .defer(d3.csv, "./data/imagePaths/female/pathExtremities1.txt")
+    .defer(d3.csv, "./data/imagePaths/female/pathExtremities2.txt")
+    .defer(d3.csv, "./data/imagePaths/female/pathExtremities3.txt")
+    .defer(d3.csv, "./data/imagePaths/female/pathHeadNeck.txt")
+    .defer(d3.csv, "./data/imagePaths/female/pathPerinaeum.txt")
+    .defer(d3.csv, "./data/imagePaths/female/pathTorso.txt")
+    .await(function(error, data1, data2, data3, data4, data5, data6, data7, data8, data9, data10) {
+    if (error) throw error;
+        var bodyPart1_1 = nodePartSilhouette
+        .append('path')
+        .attr("id","pathPalmSole")
+        .attr("class","bodyOutline")
+        .attr("d", function(){
+            var pathStr = "M ";
+
+            for(var i = 0; i < data1.length; i++)
+            {
+                if(i > 0)
+                    pathStr += "L " + data1[i].x * xscale + " " + data1[i].y * yscale+" ";
+                else
+                    pathStr += data1[i].x * xscale + " " + data1[i].y * yscale +" ";
+                if(i == data1.length-1)
+                    pathStr += "z";
+            }
+            return pathStr;
+        })
+        .style("fill", function () {
+            if(g_selectedRow >= 0 && g_selectedRow < g_tpmMeanVal.length) 
+                return g_exprValColorMap(+g_tpmMeanVal[g_selectedRow].PalmSole);
+            else
+                return g_exprValColorMap(0); })
+        .style("opacity","0.1")
+         .attr("transform","translate("+ 0 +","+0+")");
+
+        var bodyPart1_2 = nodePartSilhouette
+            .append('path')
+            .attr("id", "pathPalmSole")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+
+                for (var i = 0; i < data2.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data2[i].x * xscale + " " + data2[i].y * yscale + " ";
+                    else
+                        pathStr += data2[i].x * xscale + " " + data2[i].y * yscale + " ";
+                    if (i == data2.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () {
+                if(g_selectedRow >= 0 && g_selectedRow < g_tpmMeanVal.length) 
+                    return g_exprValColorMap(+g_tpmMeanVal[g_selectedRow].PalmSole);
+                else
+                    return g_exprValColorMap(0); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
+
+            var bodyPart1_3 = nodePartSilhouette
+            .append('path')
+            .attr("id", "pathPalmSole")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data3.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data3[i].x * xscale + " " + data3[i].y * yscale + " ";
+                    else
+                        pathStr += data3[i].x * xscale + " " + data3[i].y * yscale + " ";
+                    if (i == data3.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () {
+                if(g_selectedRow >= 0 && g_selectedRow < g_tpmMeanVal.length) 
+                {
+                    var val = +g_tpmMeanVal[g_selectedRow].PalmSole;
+                    console.log(val);
+                    return g_exprValColorMap(val);
+                }
+
+                else
+                    return g_exprValColorMap(0); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
+
+            var bodyPart1_4 = nodePartSilhouette
+            .append('path')
+            .attr("id", "pathPalmSole")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data4.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data4[i].x * xscale + " " + data4[i].y * yscale + " ";
+                    else
+                        pathStr += data4[i].x * xscale + " " + data4[i].y * yscale + " ";
+                    if (i == data4.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () {
+                if(g_selectedRow >= 0 && g_selectedRow < g_tpmMeanVal.length) 
+                    return g_exprValColorMap(+g_tpmMeanVal[g_selectedRow].PalmSole);
+                else
+                    return g_exprValColorMap(0); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
+
+
+            var bodyPart2_1 = nodePartSilhouette
+            .append('path')
+            .attr("id", "pathExtremities")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data5.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data5[i].x * xscale + " " + data5[i].y * yscale + " ";
+                    else
+                        pathStr += data5[i].x * xscale + " " + data5[i].y * yscale + " ";
+                    if (i == data5.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () {
+                if(g_selectedRow >= 0 && g_selectedRow < g_tpmMeanVal.length) 
+                    return g_exprValColorMap(+g_tpmMeanVal[g_selectedRow].Extremities);
+                else
+                    return g_exprValColorMap(0); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
+
+            
+            var bodyPart2_2 = nodePartSilhouette
+            .append('path')
+            .attr("id", "pathExtremities")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data6.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data6[i].x * xscale + " " + data6[i].y * yscale + " ";
+                    else
+                        pathStr += data6[i].x * xscale + " " + data6[i].y * yscale + " ";
+                    if (i == data6.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
+
+            
+            var bodyPart2_3 = nodePartSilhouette
+            .append('path')
+            .attr("id", "pathExtremities")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data7.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data7[i].x * xscale + " " + data7[i].y * yscale + " ";
+                    else
+                        pathStr += data7[i].x * xscale + " " + data7[i].y * yscale + " ";
+                    if (i == data7.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
+
+            var bodyPart3 = nodePartSilhouette
+            .append('path')
+            .attr("id", "pathHeadNeck")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data8.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + (data8[i].x-0.5*g_orgBodyImgWidth)+ " " + (data8[i].y-g_orgBodyImgHeight/2) + " ";
+                    else
+                        pathStr += (data8[i].x-g_orgBodyImgWidth/2)+ " " + (data8[i].y-g_orgBodyImgHeight/2) + " ";
+                    if (i == data8.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "scale("+xscale+","+yscale+") translate(" + width/2 + "," + height/2 + ")");
+
+            var bodyPart4 = nodePartSilhouette
+            .append('path')
+            .attr("id", "pathPerinaeum")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data9.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data9[i].x  * xscale + " " + data9[i].y * yscale + " ";
+                    else
+                        pathStr += data9[i].x * xscale + " " + data9[i].y * yscale + " ";
+                    if (i == data9.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
+
+            var bodyPart5 = nodePartSilhouette
+            .append('path')
+            .attr("id", "pathBody")
+            .attr("class", "bodyOutline")
+            .attr("d", function () {
+                var pathStr = "M ";
+        
+                for (var i = 0; i < data10.length; i++) {
+                    if (i > 0)
+                        pathStr += "L " + data10[i].x * xscale + " " + data10[i].y * yscale + " ";
+                    else
+                        pathStr += data10[i].x * xscale + " " + data10[i].y * yscale + " ";
+                    if (i == data10.length - 1)
+                        pathStr += "z";
+                }
+                return pathStr;
+            })
+            .style("fill", function () { return g_exprValColorMap(0.4); })
+            .style("opacity", "0.5")
+            // .attr("transform", "translate(" + 0 + "," + 0 + ")")
+            ;
+
+            // Update fill colors
+            redrawAll();
+    });
+
+
+
+ 
+    return svg_img;
+}
+
+function drawMaleBodyView(data, className, divName, width, height, margin)
+{
+
+    var svg = d3.select(divName)
+    .append("svg")
+    .attr('class', className)
+    .attr('id', className)
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");;
+
+    var svg_img=  svg.append('svg:image')
+                    .attr('x','0')
+                    .attr('y','0');
+    var logoUrl = "./data/male_body.png";
 
 
     var parts = [1, 2, 3, 4];
@@ -230,16 +577,16 @@ function drawBodyView(data, className, divName, width, height, margin)
     // console.log(g_tpmMeanVal[g_selectedRow]);
 
     d3.queue()
-    .defer(d3.csv, "./data/pathPalmSole1.txt")
-    .defer(d3.csv, "./data/pathPalmSole2.txt")
-    .defer(d3.csv, "./data/pathPalmSole3.txt")
-    .defer(d3.csv, "./data/pathPalmSole4.txt")
-    .defer(d3.csv, "./data/pathExtremities1.txt")
-    .defer(d3.csv, "./data/pathExtremities2.txt")
-    .defer(d3.csv, "./data/pathExtremities3.txt")
-    .defer(d3.csv, "./data/pathHeadNeck.txt")
-    .defer(d3.csv, "./data/pathPerinaeum.txt")
-    .defer(d3.csv, "./data/pathTorso.txt")
+    .defer(d3.csv, "./data/imagePaths/male/pathPalmSole1.txt")
+    .defer(d3.csv, "./data/imagePaths/male/pathPalmSole2.txt")
+    .defer(d3.csv, "./data/imagePaths/male/pathPalmSole3.txt")
+    .defer(d3.csv, "./data/imagePaths/male/pathPalmSole4.txt")
+    .defer(d3.csv, "./data/imagePaths/male/pathExtremities1.txt")
+    .defer(d3.csv, "./data/imagePaths/male/pathExtremities2.txt")
+    .defer(d3.csv, "./data/imagePaths/male/pathExtremities3.txt")
+    .defer(d3.csv, "./data/imagePaths/male/pathHeadNeck.txt")
+    .defer(d3.csv, "./data/imagePaths/male/pathPerinaeum.txt")
+    .defer(d3.csv, "./data/imagePaths/male/pathTorso.txt")
     .await(function(error, data1, data2, data3, data4, data5, data6, data7, data8, data9, data10) {
     if (error) throw error;
         var bodyPart1_1 = nodePartSilhouette
@@ -266,7 +613,7 @@ function drawBodyView(data, className, divName, width, height, margin)
             else
                 return g_exprValColorMap(0); })
         .style("opacity","0.5")
-         .attr("transform","translate("+ 70 +","+0+")");
+         .attr("transform","translate("+ 0 +","+0+")");
 
         var bodyPart1_2 = nodePartSilhouette
             .append('path')
@@ -291,7 +638,7 @@ function drawBodyView(data, className, divName, width, height, margin)
                 else
                     return g_exprValColorMap(0); })
             .style("opacity", "0.5")
-            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
             var bodyPart1_3 = nodePartSilhouette
             .append('path')
@@ -321,7 +668,7 @@ function drawBodyView(data, className, divName, width, height, margin)
                 else
                     return g_exprValColorMap(0); })
             .style("opacity", "0.5")
-            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
             var bodyPart1_4 = nodePartSilhouette
             .append('path')
@@ -346,7 +693,7 @@ function drawBodyView(data, className, divName, width, height, margin)
                 else
                     return g_exprValColorMap(0); })
             .style("opacity", "0.5")
-            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
 
             var bodyPart2_1 = nodePartSilhouette
@@ -372,7 +719,7 @@ function drawBodyView(data, className, divName, width, height, margin)
                 else
                     return g_exprValColorMap(0); })
             .style("opacity", "0.5")
-            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
             
             var bodyPart2_2 = nodePartSilhouette
@@ -394,7 +741,7 @@ function drawBodyView(data, className, divName, width, height, margin)
             })
             .style("fill", function () { return g_exprValColorMap(0.4); })
             .style("opacity", "0.5")
-            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
             
             var bodyPart2_3 = nodePartSilhouette
@@ -416,7 +763,7 @@ function drawBodyView(data, className, divName, width, height, margin)
             })
             .style("fill", function () { return g_exprValColorMap(0.4); })
             .style("opacity", "0.5")
-            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
             var bodyPart3 = nodePartSilhouette
             .append('path')
@@ -437,7 +784,7 @@ function drawBodyView(data, className, divName, width, height, margin)
             })
             .style("fill", function () { return g_exprValColorMap(0.4); })
             .style("opacity", "0.5")
-            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
             var bodyPart4 = nodePartSilhouette
             .append('path')
@@ -459,7 +806,7 @@ function drawBodyView(data, className, divName, width, height, margin)
             })
             .style("fill", function () { return g_exprValColorMap(0.4); })
             .style("opacity", "0.5")
-            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
             var bodyPart5 = nodePartSilhouette
             .append('path')
@@ -480,7 +827,7 @@ function drawBodyView(data, className, divName, width, height, margin)
             })
             .style("fill", function () { return g_exprValColorMap(0.4); })
             .style("opacity", "0.5")
-            .attr("transform", "translate(" + 70 + "," + 0 + ")");
+            .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
             // Update fill colors
             redrawAll();
@@ -497,6 +844,7 @@ function drawBodyView(data, className, divName, width, height, margin)
  
     return svg_img;
 }
+
 
 function setupSearchView(g_tpmMeanVal, className, divName, width, height, margin)
 {
@@ -1339,7 +1687,7 @@ function redrawAll()
        var val = g_tpmMeanVal[g_selectedRow].HeadNeck;
        return g_exprValColorMap(val);
     })
-    .style("opacity", "1")
+    .style("opacity", "0.5")
     .on("mousemove", function(d) {
         tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
     })
@@ -1359,7 +1707,7 @@ function redrawAll()
        var val = g_tpmMeanVal[g_selectedRow].Extremities;
        return g_exprValColorMap(val);
     })
-    .style("opacity", "1")
+    .style("opacity", "0.5")
     .on("mousemove", function(d) {
         tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
     })
@@ -1380,7 +1728,7 @@ function redrawAll()
        var val = g_tpmMeanVal[g_selectedRow].Perinaeum;
        return g_exprValColorMap(val);
     })
-    .style("opacity", "1")
+    .style("opacity", "0.5")
        // 把这一部分复制粘贴到其他部位即可
     .on("mousemove", function(d) {
         tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
@@ -1404,7 +1752,7 @@ function redrawAll()
        var val = g_tpmMeanVal[g_selectedRow].Body;
        return g_exprValColorMap(val);
     })
-    .style("opacity", "1")
+    .style("opacity", "0.5")
     // 把这一部分复制粘贴到其他部位即可
     .on("mousemove", function(d) {
         tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
@@ -1427,7 +1775,7 @@ function redrawAll()
        var val = g_tpmMeanVal[g_selectedRow].PalmSole;
        return g_exprValColorMap(val);
     })
-    .style("opacity", "1")
+    .style("opacity", "0.5")
     // 把这一部分复制粘贴到其他部位即可
     .on("mousemove", function(d) {
         tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
@@ -1608,7 +1956,7 @@ function rnaViewerMain()
             doSearchFromProg(searchedRNA);
 
         // 1.setup views
-        drawBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+        drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
 
         // 2. setup search box
         setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);

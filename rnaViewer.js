@@ -1197,8 +1197,9 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
 
     svg.append("g")
         .attr("transform", "translate(" + margin.left + ",0)")
-        // .call(d3.axisLeft(y).ticks(5).tickFormat(d3.format('.2f')));
-        .call(d3.axisLeft(y));
+        //  .call(d3.axisLeft(y).ticks().tickFormat(d3.format('.3')));
+        .call(d3.axisLeft(y).ticks().tickArguments([8,".3"]));
+        //.call(d3.axisLeft(y));
 
     // TODO: compute statistics!!!
     // Record subgrouped data
@@ -1867,6 +1868,11 @@ function redrawBodyViews()
         })
         .entries(subgroupedData[i]);
         // console.log(sumstat);
+        if(sumstat[0].key === "M"){
+            var temp = sumstat[0];
+            sumstat[0] = sumstat[1];
+            sumstat[1] = temp;
+        }
         groupedSumStat[i] = sumstat;
     }
 
@@ -1894,7 +1900,7 @@ function redrawBodyViews()
             // .on("mouseover", function (d) {
             //     var tid = uniqueGroups.indexOf("HeadNeck");
             //     if (g_isEnglish)
-            //         tooltip.text(partName + `: ${(selectedData[tid][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            //         tooltip.text(partName + `: ${selectedData[tid][0].key}`);
             //     else
             //         tooltip.text(partName + `: ${(selectedData[id][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
             //     tooltip.style("visibility", "visible");
@@ -1916,9 +1922,9 @@ function redrawBodyViews()
             // .on("mouseover", function (d) {
             //     var tid = uniqueGroups.indexOf("HeadNeck");
             //     if (g_isEnglish)
-            //         tooltip.text(partName + `: ${(selectedData[tid][0].key == "M") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            //         tooltip.text(partName + `: ${selectedData[tid][1].key}`);
             //     else
-            //         tooltip.text(partName + `: ${(selectedData[tid][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            //         tooltip.text(partName + `: ${selectedData[tid][0].key}`);
             //     tooltip.style("visibility", "visible");
             // })
             // .on("mouseout", function (d) {
@@ -1926,7 +1932,39 @@ function redrawBodyViews()
             // });
             ;
     }
-   
+   // HeadNeck
+   id  = uniqueGroups.indexOf("HeadNeck");
+   var partHeadNeck = bodyView.selectAll("#pathHeadNeck")
+   .on("mousemove", function(d) {
+       tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
+   })
+   .on("mouseover", function(d) {
+       var tid = uniqueGroups.indexOf("HeadNeck");
+       if(g_isEnglish)
+           tooltip.text(`HeadNeck: ${selectedData[tid][0].value.mu.toFixed(3)}`);
+       else
+           tooltip.text(`头颈: ${selectedData[tid][0].value.mu.toFixed(3)}`);
+       tooltip.style("visibility", "visible");
+   })
+   .on("mouseout", function(d) {
+       tooltip.style("visibility", "hidden");
+   });
+
+   var partHeadNeckM = bodyViewM.selectAll("#pathHeadNeck")
+   .on("mousemove", function(d) {
+       tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
+   })
+   .on("mouseover", function(d) {
+       var tid = uniqueGroups.indexOf("HeadNeck");
+       if(g_isEnglish)
+           tooltip.text(`HeadNeck:${selectedData[tid][1].value.mu.toFixed(3)}`);
+       else
+           tooltip.text(`头颈:${selectedData[tid][1].value.mu.toFixed(3)}`);
+       tooltip.style("visibility", "visible");
+   })
+   .on("mouseout", function(d) {
+       tooltip.style("visibility", "hidden");
+   });
 
 // // Extermities
     id  = uniqueGroups.indexOf("Extremities");
@@ -1937,9 +1975,9 @@ function redrawBodyViews()
     .on("mouseover", function(d) {
         var tid = uniqueGroups.indexOf("Extremities");
         if(g_isEnglish)
-            tooltip.text(`Extremities: ${(selectedData[tid][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`Extremities: ${selectedData[tid][0].value.mu.toFixed(3)}`);
         else
-            tooltip.text(`四肢: ${(selectedData[tid][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`四肢: ${selectedData[tid][0].value.mu.toFixed(3)}`);
         tooltip.style("visibility", "visible");
     })
     .on("mouseout", function(d) {
@@ -1953,9 +1991,9 @@ function redrawBodyViews()
     .on("mouseover", function(d) {
         var tid = uniqueGroups.indexOf("Extremities");
         if(g_isEnglish)
-            tooltip.text(`Extremities::${(selectedData[tid][0].key == "M") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`Extremities::${selectedData[tid][1].value.mu.toFixed(3)}`);
         else
-            tooltip.text(`四肢::${(selectedData[tid][0].key == "M") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`四肢::${selectedData[tid][1].value.mu.toFixed(3)}`);
         tooltip.style("visibility", "visible");
     })
     .on("mouseout", function(d) {
@@ -1972,9 +2010,9 @@ function redrawBodyViews()
     .on("mouseover", function(d) {
         var tid = uniqueGroups.indexOf("Perinaeum");
         if(g_isEnglish)
-            tooltip.text(`Perinaeum: ${(selectedData[tid][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`Perinaeum: ${selectedData[tid][0].value.mu.toFixed(3)}`);
         else
-            tooltip.text(`外阴: ${(selectedData[tid][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`外阴: ${selectedData[tid][0].value.mu.toFixed(3)}`);
 
         tooltip.style("visibility", "visible");
     })
@@ -1990,9 +2028,9 @@ function redrawBodyViews()
     .on("mouseover", function(d) {
         var tid = uniqueGroups.indexOf("Perinaeum");
         if(g_isEnglish)
-            tooltip.text(`Perinaeum::${(selectedData[tid][0].key == "M") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`Perinaeum:${selectedData[tid][1].value.mu.toFixed(3)}`);
         else
-            tooltip.text(`外阴::${(selectedData[tid][0].key == "M") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`外阴:${selectedData[tid][1].value.mu.toFixed(3)}`);
 
         tooltip.style("visibility", "visible");
     })
@@ -2011,9 +2049,9 @@ function redrawBodyViews()
     .on("mouseover", function(d) {
         var tid = uniqueGroups.indexOf("Body");
         if(g_isEnglish)
-            tooltip.text(`Body: ${(selectedData[tid][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`Body: ${selectedData[tid][0].value.mu.toFixed(3)}`);
         else
-            tooltip.text(`躯干: ${(selectedData[tid][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`躯干: ${selectedData[tid][0].value.mu.toFixed(3)}`);
 
         tooltip.style("visibility", "visible");
     })
@@ -2028,9 +2066,9 @@ function redrawBodyViews()
     .on("mouseover", function(d) {
         var tid = uniqueGroups.indexOf("Body");
         if(g_isEnglish)
-            tooltip.text(`Body::${(selectedData[tid][0].key == "M") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`Body: ${selectedData[tid][1].value.mu.toFixed(3)}`);
         else
-            tooltip.text(`躯干::${(selectedData[tid][0].key == "M") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`躯干: ${selectedData[tid][1].value.mu.toFixed(3)}`);
 
         tooltip.style("visibility", "visible");
     })
@@ -2048,9 +2086,9 @@ function redrawBodyViews()
     .on("mouseover", function(d) {
         var tid = uniqueGroups.indexOf("PalmSole");
         if(g_isEnglish)
-            tooltip.text(`PalmSole: ${(selectedData[tid][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`PalmSole: ${selectedData[tid][0].value.mu.toFixed(3)}`);
         else
-             tooltip.text(`掌跖: ${(selectedData[tid][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+             tooltip.text(`掌跖: ${selectedData[tid][0].value.mu.toFixed(3)}`);
 
         tooltip.style("visibility", "visible");
     })
@@ -2065,9 +2103,9 @@ function redrawBodyViews()
     .on("mouseover", function(d) {
         var tid = uniqueGroups.indexOf("PalmSole");
         if(g_isEnglish)
-            tooltip.text(`PalmSole::${(selectedData[tid][0].key == "M") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+            tooltip.text(`PalmSole: ${selectedData[tid][1].value.mu.toFixed(3)}`);
         else
-             tooltip.text(`掌跖::${(selectedData[tid][0].key == "M") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
+             tooltip.text(`掌跖: ${selectedData[tid][1].value.mu.toFixed(3)}`);
 
         tooltip.style("visibility", "visible");
     })

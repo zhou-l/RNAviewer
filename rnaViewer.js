@@ -1458,7 +1458,6 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
   .attr("transform",
       "translate(" + margin.left + "," + margin.top + ")");
 
-    var groups = g_tpmMeanVal.columns.slice(1);
     // X axis
     var x = d3.scaleLinear()
         .range([0, width]);
@@ -1479,6 +1478,7 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
     // Group the data into subgroups
     var groupedData = [];
     var groups = [];
+    var subgroups = zsubgroups;
     var dkeys = d3.keys(data).slice(1);
     for(var i = 0; i < dkeys.length; i++)
     {
@@ -1531,9 +1531,48 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
     }
 
     // Sort by age
+    var ageGroupedData = [];
+    var ageGroups = [0,18,40];
+    for(var i = 0; i < ageGroups.length; i++)
+    {
+        ageGroupedData.push([]);
+    }
+
     for(var i  = 0; i < subgroupedData.length; i++){
         subgroupedData[i].sort(function(x,y){return d3.ascending(x.age, y.age);});
+        for(var j = 0; j < subgroupedData[i].length; j++)
+        {
+            for(var ag = 0; ag < ageGroups.length-1; ag ++){
+                if(subgroupedData[i][j].age >= ageGroups[ageGroups.length-1]){
+                    ageGroupedData[ageGroups.length-1].push({key: ageGroups.length-1, value: subgroupedData[i][j]});
+                    break;
+                }
+                if(subgroupedData[i][j].age >= ageGroups[ag] && subgroupedData[i][j].age < ageGroups[ag+1]){
+                    ageGroupedData[ag].push({key: ag, value: subgroupedData[i][j]});
+                    break;
+                }
+            }
+        }
     }
+  // compute grouped stats
+  var groupedSumStat = Array(ageGroups.length);
+  for(var i = 0; i < ageGroupedData.length;i++){
+    var sumstat = d3.nest()
+    .key(function(d) {return d.key;})
+    .rollup(function(d){
+        q1 = d3.quantile(d.map(function(g) { return g.value.val;}).sort(d3.ascending),.25);
+        median = d3.quantile(d.map(function(g) { return g.value.val;}).sort(d3.ascending),.5);
+        q3 = d3.quantile(d.map(function(g) { return g.value.val;}).sort(d3.ascending),.75);
+        interQuantileRange = q3 - q1;
+        min = d3.min(d.map(function(g) { return g.value.val;}));//q1 - 1.5 * interQuantileRange;
+        max = d3.max(d.map(function(g) { return g.value.val;}));//q3 + 1.5 * interQuantileRange;
+        return({q1: q1, median: median, q3: q3, interQuantileRange: interQuantileRange, min: min, max: max});
+    })
+    .entries(ageGroupedData[i]);
+    // console.log(sumstat);
+    groupedSumStat[i] = sumstat;
+}
+
     // draw a line for each location
 
     for (var i = 0; i < subgroupedData.length; i++) {

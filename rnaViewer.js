@@ -1082,7 +1082,7 @@ function doSearch() {
     }
   }
 
-function drawDotplots(data, subjectInfoData, className, divName, width, height, margin, zsubgroups=['F','M'], zisLog = true)
+function drawDotplots(data, subjectInfoData, className, divName, width, height, margin, zsubgroups=['F','M'], zisLog = true, zIsPalmSoleOnly = false)
 {
     if (data == [] || data == null)
         return;
@@ -1096,16 +1096,25 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
   .attr("transform",
       "translate(" + margin.left + "," + margin.top + ")");
 
-    var groups = g_tpmMeanVal.columns.slice(1);
+    var subgroups = zsubgroups;
+    var isLog = zisLog;
+    var isSex = false;
+    var isPalmSoleOnly = zIsPalmSoleOnly;
+    if (subgroups[0] === 'F' && subgroups[1] === 'M')
+        isSex = true;
+    else
+        isSex = false;
+    var namegroups = g_tpmMeanVal.columns.slice(1);
+    
     var xtxtGroups = [];
     if(g_isEnglish)
     {
-        xtxtGroups = groups;
+        xtxtGroups = namegroups;
     }
     else
     {
         for(var i = 0; i < g_posTranslate.length; i++){
-            if(groups[i] === g_posTranslate[i].en)
+            if(namegroups[i] === g_posTranslate[i].en)
                 xtxtGroups.push(g_posTranslate[i].cn);
         } 
     }
@@ -1115,8 +1124,14 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         .rangeRound([margin.left, width - margin.right])
         // .domain(function (d) { 
         // })
-        .domain(groups)
         .padding(0.2);
+
+  
+    if (isPalmSoleOnly)
+        x.domain(['PalmSole']);
+    else
+        x.domain(namegroups);
+
     svg.append("g")
         .attr("transform", "translate(0," + (height - margin.bottom) + ")")
         .call(d3.axisBottom(x).tickFormat(function(d,i){
@@ -1144,14 +1159,7 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
     // Another scale for subgroup position?
     // var subgroups = ['F', 'M'];
     // var subgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
-    var subgroups = zsubgroups;
-    var isLog = zisLog;
-    var isSex = false;
-    if (subgroups[0] === 'F' && subgroups[1] === 'M')
-        isSex = true;
-    else
-        isSex = false;
-
+    
     var xSubgroup = d3.scaleBand()
         .domain(subgroups)
         .range([0, x.bandwidth()])
@@ -1203,12 +1211,20 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
 
     // TODO: compute statistics!!!
     // Record subgrouped data
-    var subgroupedData = Array(uniqueGroups.length);
-    var groupedSumStat = Array(uniqueGroups.length);
+    var idPalmSole = uniqueGroups.indexOf("PalmSole");
+    var subgroupLen = uniqueGroups.length;
+    if(isPalmSoleOnly)
+    {
+        subgroupLen = 1;
+    }
+
+    var subgroupedData = Array(subgroupLen);
+    var groupedSumStat = Array(subgroupLen);
     for(var i = 0; i < subgroupedData.length; i++){
         subgroupedData[i]  = [];
         groupedSumStat[i] = [];
     }
+    
 
     // Grouped bars (just for reference!)
     // svg.append("g")
@@ -1249,7 +1265,12 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
         
         var kky = (isSex)? ((d.sex === "female")? "F" : "M") : d.ageGroup;
         var id  = uniqueGroups.indexOf(d.group);
-        subgroupedData[id].push({key: kky, value: d.val });
+        if(isPalmSoleOnly){
+            if(id == idPalmSole)
+                subgroupedData[0].push({key: kky, value: d.val });
+        }
+        else
+            subgroupedData[id].push({key: kky, value: d.val });
     }
     // compute grouped stats
 
@@ -1272,13 +1293,16 @@ function drawDotplots(data, subjectInfoData, className, divName, width, height, 
 
     // draw the boxplot
     // Show the main vertical line
+    
     svg
         .selectAll("bpVertLines")
         .data(groupedSumStat)
         .enter()
         .append("g")
         .attr("class", "bpVertLines")
-        .attr("transform", function (d,i) { return "translate(" + x(uniqueGroups[i]) + ",0)"; })
+        .attr("transform", function (d,i) {
+             return "translate(" + x(uniqueGroups[i]) + ",0)"; 
+            })
         .selectAll("line")
         .data(function(d){
             // console.log(d);
@@ -1517,8 +1541,8 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
         //     .x(function (d) { return x(d.age); })
         //     .y(function (d) { return y(d.val+ydelta); });
         // do regression
-        
-     
+        if(uniqueGroups[i] != "PalmSole")
+            continue;
         var valueline = [];
         valueline = d3.line().defined(d => !isNaN(d.val))
             .x(d => x(d.age))
@@ -1589,7 +1613,8 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
         
     var ww = 14;
     svg.append("g").selectAll("labelsRect")
-        .data(uniqueGroups)
+        // .data(uniqueGroups)
+        .data(["PalmSole"])
         .enter()
         .append("rect")
         .attr("width", ww)
@@ -1602,7 +1627,8 @@ function drawLinechart(data, subjectInfoData, className, divName, width, height,
 
         
     svg.append("g").selectAll("labels")
-    .data(uniqueGroups)
+    // .data(uniqueGroups)
+    .data(["PalmSole"])
     .enter()
     .append("text")
     .style("font-size", "12px")
@@ -2309,9 +2335,10 @@ function redrawAll()
         g_dpwidth, g_dpheight, g_margin);
 
     d3.selectAll(".dotplotageGroup").remove();
-    var ageGroupSubgroups = ['0_10', '11_20', '21_30', '31_40', '41_50', '51_60', '61_70', 'over70'];
+    // var ageGroupSubgroups = ['0_10', '11_20', '21_30', '31_40', '41_50', '51_60', '61_70', 'over70'];
+    var ageGroupSubgroups = ['0_17', '18_39', 'over40'];
     drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotageGroup", "#dotplotView",
-        g_dpwidth, g_dpheight, g_margin, ageGroupSubgroups);
+        g_dpwidth, g_dpheight, g_margin, ageGroupSubgroups, true, true);
 
     d3.selectAll(".linechartViewAge").remove();
     drawLinechart(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "linechartViewAge", "#linechartView",
@@ -2378,54 +2405,55 @@ function rnaViewerMain()
     // drawBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
     // 0.load data
     // d3.csv("./data/tpm_meanVal.csv", function(data)
-    d3.csv("./data/tpm0612_meanVal.csv", function(data)
-    {
-        for(var i = 0; i < data.length; i++)
-        {
-            data[i].symbol = data[i].symbol;
-            data[i].HeadNeck = +data[i].HeadNeck;
-            data[i].Body = +data[i].Extremities;
-            data[i].PalmSole = +data[i].PalmSole;
-            data[i].Perinaeum = +data[i].Perinaeum;
-        }
-        g_tpmMeanVal = data;
+    // d3.csv("./data/tpm0612_meanVal.csv", function(data)
+    // {
+    //     for(var i = 0; i < data.length; i++)
+    //     {
+    //         data[i].symbol = data[i].symbol;
+    //         data[i].HeadNeck = +data[i].HeadNeck;
+    //         data[i].Body = +data[i].Extremities;
+    //         data[i].PalmSole = +data[i].PalmSole;
+    //         data[i].Perinaeum = +data[i].Perinaeum;
+    //     }
+    //     g_tpmMeanVal = data;
 
 
 
-        if (searchedRNA != "A1BG" && searchedRNA != null)
-            doSearchFromProg(searchedRNA);
+    //     if (searchedRNA != "A1BG" && searchedRNA != null)
+    //         doSearchFromProg(searchedRNA);
 
-        // // 1.setup views
-        // // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
-        // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
-        // // the second body view
-        // drawMaleBodyView(g_tpmMeanVal, "bodyMapM", "#bodyViewM", g_bvwidth, g_bvheight, g_margin);
+    //     // // 1.setup views
+    //     // // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+    //     // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+    //     // // the second body view
+    //     // drawMaleBodyView(g_tpmMeanVal, "bodyMapM", "#bodyViewM", g_bvwidth, g_bvheight, g_margin);
 
-        // 2. setup search box
-        setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
-        // 2.1 setup drop box
-        // d3.select("#rnaDropbox")
-        // .selectAll('rnaOptions')
-        // .data(g_tpmMeanVal)
-        // .enter()
-        // .text(function (d) { return d.Symbol; }) // text showed in the menu
-        // .attr("value", function (d,i) { return i; }) // corresponding value returned by the button
-        // .property("selected", function(d){ return d.Symbol === g_tpmMeanVal[g_selectedRow]; });
+    //     // 2. setup search box
+    //     setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
+    //     // 2.1 setup drop box
+    //     // d3.select("#rnaDropbox")
+    //     // .selectAll('rnaOptions')
+    //     // .data(g_tpmMeanVal)
+    //     // .enter()
+    //     // .text(function (d) { return d.Symbol; }) // text showed in the menu
+    //     // .attr("value", function (d,i) { return i; }) // corresponding value returned by the button
+    //     // .property("selected", function(d){ return d.Symbol === g_tpmMeanVal[g_selectedRow]; });
         
-        // 3. setup barchart
-        // drawBarcharts(g_tpmMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
+    //     // 3. setup barchart
+    //     // drawBarcharts(g_tpmMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
        
-        // draw dotplots?
-        // drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplot", "#barchartView", 
-        // g_dpwidth, g_dpheight, g_margin);
-    });
+    //     // draw dotplots?
+    //     // drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplot", "#barchartView", 
+    //     // g_dpwidth, g_dpheight, g_margin);
+    // });
 
     // 4. load the full data
  d3.queue()
     // .defer(d3.csv, "./data/tpm_full.csv")
     .defer(d3.csv, "./data/TPM0612.csv")
     .defer(d3.csv, "./data/subjectInfo_new.csv")
-    .await(function(error, data1, data2){
+    .defer(d3.csv, "./data/tpm0612_meanVal.csv")
+    .await(function(error, data1, data2, data3){
         if(error) throw error;
 
         // Handle the full tpm
@@ -2443,6 +2471,27 @@ function rnaViewerMain()
         // Handle the subject information
         g_tpmSubInfo = data2;
         
+        for(var i = 0; i < data3.length; i++)
+        {
+            data3[i].symbol = data3[i].symbol;
+            data3[i].HeadNeck = +data3[i].HeadNeck;
+            data3[i].Body = +data3[i].Extremities;
+            data3[i].PalmSole = +data3[i].PalmSole;
+            data3[i].Perinaeum = +data3[i].Perinaeum;
+        }
+        g_tpmMeanVal = data3;
+        // 0. Prepare the search bar with a default term
+        if (searchedRNA != "A1BG" && searchedRNA != null)
+            doSearchFromProg(searchedRNA);
+
+        // // 1.setup views
+        // // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+        // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+        // // the second body view
+        // drawMaleBodyView(g_tpmMeanVal, "bodyMapM", "#bodyViewM", g_bvwidth, g_bvheight, g_margin);
+
+        // 2. setup search box
+        setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
        // 1.setup views
         // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
         drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
@@ -2451,9 +2500,10 @@ function rnaViewerMain()
 
 
         // draw the dotplot
-        var ageGroupSubgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
+        // var ageGroupSubgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
+        var ageGroupSubgroups = ['0_17', '18_39','over40'];
         drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotageGroup", "#dotplotView", 
-        g_dpwidth, g_dpheight, g_margin, ageGroupSubgroups);
+        g_dpwidth, g_dpheight, g_margin, ageGroupSubgroups, true, true);
 
         drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#barchartView", 
         g_dpwidth, g_dpheight, g_margin);

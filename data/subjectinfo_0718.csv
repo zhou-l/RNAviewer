@@ -1,0 +1,160 @@
+id,age,ageGroup_old,ageGroup,sex
+TBL,28,21_30,18-39,female
+LXB,36,31_40,18-39,female
+FXQ,41,41_50,over 40,male
+WYG_1,46,41_50,over 40,male
+WYG_3,46,41_50,over 40,male
+ZLR_1,51,51_60,over 40,female
+N15,86,over 70,over 40,female
+CXL,25,21_30,18-39,male
+LXI,31,31_40,18-39,female
+WTING,31,31_40,18-39,female
+LCONG,33,31_40,18-39,female
+LXW_1,38,31_40,18-39,female
+LTM,43,41_50,over 40,male
+JGZ,51,51_60,over 40,female
+N7,55,51_60,over 40,male
+LFG,55,51_60,over 40,male
+ZYH,63,61_70,over 40,male
+FNX_2,9,0_10,0-17,female
+JBY,12,11_20,0-17,male
+JBY_2,12,11_20,0-17,male
+LZY,13,11_20,0-17,male
+N24,17,11_20,0-17,male
+WSB,18,11_20,18-39,male
+TMY,19,11_20,18-39,female
+LPP,25,21_30,18-39,female
+LSHUAI,26,21_30,18-39,male
+ZYANG,27,21_30,18-39,female
+GYC,29,21_30,18-39,female
+ZPY,30,21_30,18-39,female
+YRX_1,30,21_30,18-39,female
+YRX_2,30,21_30,18-39,female
+CX,36,31_40,18-39,male
+CCHAO_1,37,31_40,18-39,female
+CCHAO_2,37,31_40,18-39,female
+N16,37,31_40,18-39,male
+YWH,47,41_50,over 40,female
+CQY,50,41_50,over 40,male
+ZZS,54,51_60,over 40,male
+LGFANG,55,51_60,over 40,female
+DBL_E,10,0_10,0-17,male
+WMY,11,11_20,0-17,male
+KHL,11,11_20,0-17,male
+CYF,15,11_20,0-17,female
+WSL,16,11_20,0-17,male
+AYT,23,21_30,18-39,male
+LYH,25,21_30,18-39,male
+ZYUE,28,21_30,18-39,female
+LYX,29,21_30,18-39,female
+ZBY,29,21_30,18-39,male
+HXIAO,30,21_30,18-39,female
+PWEN,30,21_30,18-39,female
+LXD,31,31_40,18-39,male
+WJING,31,31_40,18-39,female
+CT,31,31_40,18-39,male
+WCM,32,31_40,18-39,female
+WXI,33,31_40,18-39,female
+N19,34,31_40,18-39,female
+WYU,34,31_40,18-39,female
+YYANG,34,31_40,18-39,female
+HSY,34,31_40,18-39,male
+ZYAN_1,35,31_40,18-39,female
+WY1,38,31_40,18-39,female
+WY2,38,31_40,18-39,female
+LFENG,38,31_40,18-39,male
+YJH,38,31_40,18-39,female
+ZLI,39,31_40,18-39,female
+GYJ_1,39,31_40,18-39,female
+GYJ_2,39,31_40,18-39,female
+ZYAO,39,31_40,18-39,female
+WYY,40,31_40,over 40,female
+CHP,42,41_50,over 40,male
+HCX,44,41_50,over 40,female
+SLH,44,41_50,over 40,female
+XXHONG,45,41_50,over 40,female
+XJING,49,41_50,over 40,female
+CXS,51,51_60,over 40,female
+ZYJ_E,54,51_60,over 40,female
+LLY,56,51_60,over 40,female
+WL,56,51_60,over 40,male
+ZXX,59,51_60,over 40,female
+SMZ,6,0_10,0-17,male
+LJY,61,61_70,over 40,female
+JLJ,61,61_70,over 40,female
+LRH,61,61_70,over 40,female
+LFL,65,61_70,over 40,female
+GHONG,65,61_70,over 40,male
+ZDY,65,61_70,over 40,female
+YFY,68,61_70,over 40,female
+LDX,74,over 70,over 40,male
+WSN,8,0_10,0-17,male
+SYC,88,over 70,over 40,male
+ZYAN_2,9,0_10,0-17,female
+ZJH,8,0_10,0-17,male
+XYANG,8,0_10,0-17,female
+YQF,10,0_10,0-17,male
+YJING,12,11_20,0-17,male
+N14,14,11_20,0-17,female
+ZLJ_1,18,11_20,18-39,female
+YC1,20,11_20,18-39,female
+WSY,22,21_30,18-39,female
+LSL,23,21_30,18-39,female
+LMENG,25,21_30,18-39,female
+N27,30,21_30,18-39,female
+CYC,31,31_40,18-39,male
+ZWP,32,31_40,18-39,female
+CDJIE,36,31_40,18-39,female
+LHANG,36,31_40,18-39,male
+CCHAO,37,31_40,18-39,male
+JMY,41,41_50,over 40,female
+SWEI,43,41_50,over 40,male
+LFEI,46,41_50,over 40,male
+N1,56,51_60,over 40,male
+GQL,57,51_60,over 40,female
+N3,66,61_70,over 40,female
+SGH,14,11_20,0-17,male
+DYF,20,11_20,18-39,female
+ZYX,22,21_30,18-39,female
+PYX,23,21_30,18-39,male
+ZBO,25,21_30,18-39,male
+WHRU,28,21_30,18-39,female
+LIUJING,28,21_30,18-39,female
+ZQI,28,21_30,18-39,male
+HYING,33,31_40,18-39,female
+TXP,34,31_40,18-39,male
+N11,36,31_40,18-39,female
+N8,38,31_40,18-39,female
+LXW_2,38,31_40,18-39,female
+CYUAN,39,31_40,18-39,female
+SYU,39,31_40,18-39,female
+LDD,40,31_40,over 40,female
+XZX,41,41_50,over 40,female
+HXJ,42,41_50,over 40,female
+CQH,44,41_50,over 40,female
+WZHONG,52,51_60,over 40,male
+HBC,53,51_60,over 40,female
+XHUI,53,51_60,over 40,female
+SXH,55,51_60,over 40,female
+ZHY,6,0_10,0-17,female
+DHZ,6,0_10,0-17,female
+XY,67,61_70,over 40,female
+ZHR,69,61_70,over 40,female
+DZH,8,0_10,0-17,female
+RNA42,30,21_30,18-39,male
+RNA1,31,31_40,18-39,male
+RNA31,31,31_40,18-39,male
+RNA34,31,31_40,18-39,male
+RNA41,31,31_40,18-39,male
+RNA49,31,31_40,18-39,male
+ZFU,32,31_40,18-39,female
+RNA8,33,31_40,18-39,male
+RNA46,34,31_40,18-39,male
+CXJ,35,31_40,18-39,female
+RNA6,35,31_40,18-39,male
+RNA39,36,31_40,18-39,male
+RNA17,37,31_40,18-39,male
+RNA33,37,31_40,18-39,male
+RNA27,39,31_40,18-39,male
+ZX,24,21_30,18-39,male
+YLEI,47,41_50,over 40,female

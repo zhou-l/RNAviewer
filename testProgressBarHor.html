@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<meta charset='utf-8'>
+
+	<style type="text/css">
+
+	.progressSelector{
+		margin-bottom: 30px;
+	}
+
+	</style>
+
+	<body>
+
+	<select class="progressSelector" onchange="moveProgressBar(value)">
+		<option value="started" selected>Started</option>
+		<option value="inProgress">In Progress</option>
+		<option value="completed">Completed</option>
+	</select>
+
+	<div class="progress"></div>
+
+	<script src='d3.v4.min.js'></script>
+	<script>
+
+
+	var svg = d3.select('.progress')
+		.append('svg')
+		.attr('height', 100)
+		.attr('width', 500);
+
+	var states = ['started', 'inProgress', 'completed'],
+	    segmentWidth = 100,
+		currentState = 'started';
+
+	var colorScale = d3.scaleOrdinal()
+		.domain(states)
+		.range(['yellow', 'orange', 'green']);
+
+	svg.append('rect')
+		.attr('class', 'bg-rect')
+		.attr('rx', 10)
+		.attr('ry', 10)
+		.attr('fill', 'gray')
+		.attr('height', 15)
+		.attr('width', function(){
+			return segmentWidth * states.length;
+		})
+		.attr('x', 0);
+
+	var progressBar = svg.append('rect')
+					.attr('class', 'progress-rect')
+					.attr('fill', function(){
+						return colorScale(currentState);
+					})
+					.attr('height', 15)
+					.attr('width', 0)
+					.attr('rx', 10)
+					.attr('ry', 10)
+					.attr('x', 0);
+
+                    progressBar.transition()
+		.duration(1000)
+		.attr('width', function(){
+			var index = states.indexOf(currentState);
+			return (index + 1) * segmentWidth;
+		});
+
+	function moveProgressBar(state){
+		progressBar.transition()
+			.duration(1000)
+			.attr('fill', function(){
+				return colorScale(state);
+			})
+			.attr('width', function(){
+				var index = states.indexOf(state);
+				return (index + 1) * segmentWidth;
+			});
+	}
+
+    var loadProgress = 0;
+    d3.csv("./data/TPM_159.csv")
+    .on("progress", function(d) {
+    
+    var i = d3.interpolate(loadProgress, d.loaded / d.total);
+    d3.transition().tween("progress", function () {
+        state = "inProgress";
+        return function (t) {
+            loadProgress = i(t);
+            progressBar.transition()
+            .attr('fill', function(){
+				return colorScale(state);
+			})
+			.attr('width', function(){
+				// var index = states.indexOf(state);
+				return (loadProgress) * 3 * segmentWidth; // the multiplier 3 makes the complete width of the progress bar
+			});
+        };
+    });
+    })
+    .get(function(error, data) {
+    //   meter.transition().delay(50).attr("transform", "scale(0)");
+    //   text.text("done!");
+
+      console.log(data.length);
+      state = "completed";
+      progressBar
+        .attr('fill', function(){
+				return colorScale(state);});
+      
+    });
+
+
+	</script>
+	</body>
+</html>

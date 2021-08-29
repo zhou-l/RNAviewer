@@ -10,6 +10,7 @@
 <script src="d3-scale-chromatic.min.js"></script>
 <script src="d3-color.min.js"></script>
 <script src="regression.min.js"></script>
+<script src="myGlobalVars.js"></script>
 
 <!-- <script src="welcome.js"></script> -->
 <!-- <script src="image-outline-min.js"></script>
@@ -157,7 +158,10 @@
 
 	<div id="VAcanvas" class=" w3-content w3-mobile  " style=" height:1600px;width:1200px">
 		<!-- <div class = "w3-cell-row"> -->
+			<!-- <div class="row">
 
+				<div id="fileLoadProgressBar" class="progress"></div>
+			</div> -->
 
 		<div class="row">
 			<div id="rnaInfoArea" class=" w3-container w3-cell column" style="width:300px;height:600px;">
@@ -209,8 +213,9 @@
 	</style>
 
 </body>
-
+<script src="loadFileProgress.js"></script>
 <script src="rnaViewer.js"></script>
+
 <script>
 	rnaViewerMain();
 </script>

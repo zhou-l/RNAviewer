@@ -1,69 +1,4 @@
-// NOTE:
-// We need to convert body images paths before we can use them!!!
-// We currently use the "image-outline" package as an NPM package to convert them!!!
 
-// global variables
-var g_margin = { left: 20, right: 20, top: 10, bottom: 10 };
-
-// bar charts
-var g_bcwidth = 1200;
-var g_bcheight = 600;
-
-// dot plots
-var g_dpwidth = 1000;
-var g_dpheight = 400;
-
-// body view
-var g_bvwidth = 400;
-var g_bvheight= 600;
-var g_orgBodyImgWidth = 3508;
-var g_orgBodyImgHeight = 4961;
-var g_posNames = [];
-// global data
-var g_tpmMeanVal = [];
-var g_tpmFullData = [];
-var g_tpmSubInfo = [];
-var g_exprValColorMap = [];
-// var g_pathFiles = ['./data/pathHeadNeck.txt','./data/pathLegs.txt','./data/pathTorso.txt',
-// './data/pathPerineum.txt','./data/pathArmsHands.txt'];
-var g_pathFiles = ['./data/imagePaths/female/pathHeadNeck.txt','./data/imagePaths/female/pathLegs.txt',
-'./data/imagePaths/female/pathTorso.txt',
-'./data/imagePaths/female/pathPerineum.txt','./data/imagePaths/female/pathArmsHands.txt'];
-
-var g_sgwidth = 1400;
-var g_sgLegendWidth = 100;
-var g_sgheight = 300;
-// selected row of the data
-var g_selectedRow = 0;
-var g_selectedData = null;
-
-// Language setting
-var g_isEnglish = false;
-var g_posTranslate = [
-    {"cn":"头颈",
-     "en":"HeadNeck"},
-     {"cn":"躯干+四肢",
-     "en":"Extremities"},
-     {"cn":"掌跖",
-     "en":"PalmSole"},
-     {"cn":"躯干",
-     "en":"Trunk"},
-     {"cn":"外阴",
-     "en":"Perineum"}
-];
-
-// // colormap range of the body viewer
-// [0-3）
-// [3-6）
-// [6-11）
-// [11-26）
-// [26-51）
-// [51-101）
-// [101-501）
-// [501，+∞）
-var g_colormapThres = [0, 3, 6, 11, 26, 51, 101, 501];
-// var g_colormapGroups = d3.scaleOrdinal(d3.schemePuOr[11]);
-var g_colormapGroups = d3.scaleOrdinal(d3.schemeTableau10);
 // function drawTable() {
 //     var tableFname = "Result-MedicalTable.csv";
 //     d3.csv(tableFname, function (error, data) {
@@ -2015,20 +1950,6 @@ function redrawBodyViews()
                 return g_exprValColorMap(val);
             })
             .style("opacity", "0.5")
-            // .on("mousemove", function (d) {
-            //     tooltip.style("top", (d3.event.pageY - 10) + "px").style("left", (d3.event.pageX + 10) + "px");
-            // })
-            // .on("mouseover", function (d) {
-            //     var tid = uniqueGroups.indexOf("HeadNeck");
-            //     if (g_isEnglish)
-            //         tooltip.text(partName + `: ${selectedData[tid][0].key}`);
-            //     else
-            //         tooltip.text(partName + `: ${(selectedData[id][0].key == "F") ? selectedData[id][0].value.mu : selectedData[id][1].value.mu}`);
-            //     tooltip.style("visibility", "visible");
-            // })
-            // .on("mouseout", function (d) {
-            //     tooltip.style("visibility", "hidden");
-            // });
             ;
 
         var partHeadNeckM = bodyViewM.selectAll(partSvgName)
@@ -2037,22 +1958,26 @@ function redrawBodyViews()
                 return g_exprValColorMap(val);
             })
             .style("opacity", "0.5")
-            // .on("mousemove", function (d) {
-            //     tooltip.style("top", (d3.event.pageY - 10) + "px").style("left", (d3.event.pageX + 10) + "px");
-            // })
-            // .on("mouseover", function (d) {
-            //     var tid = uniqueGroups.indexOf("HeadNeck");
-            //     if (g_isEnglish)
-            //         tooltip.text(partName + `: ${selectedData[tid][1].key}`);
-            //     else
-            //         tooltip.text(partName + `: ${selectedData[tid][0].key}`);
-            //     tooltip.style("visibility", "visible");
-            // })
-            // .on("mouseout", function (d) {
-            //     tooltip.style("visibility", "hidden");
-            // });
             ;
     }
+    // update trunk
+    var partTrName = "Extremities";
+    var idTr = uniqueGroups.indexOf(partTrName);
+    var partTrSvgName = "#pathTrunk";
+    var partTrunk = bodyView.selectAll(partTrSvgName)
+        .style("fill", function () {
+            var val = (selectedData[idTr][0].key == "F") ? selectedData[idTr][0].value.mu : selectedData[idTr][1].value.mu;
+            return g_exprValColorMap(val);
+        })
+        .style("opacity", "0.5")
+        ;
+
+    var partTrunkM = bodyViewM.selectAll(partTrSvgName)
+        .style("fill", function () {
+            var val = (selectedData[idTr][0].key == "M") ? selectedData[idTr][0].value.mu : selectedData[idTr][1].value.mu;
+            return g_exprValColorMap(val);
+        })
+        .style("opacity", "0.5");
    // HeadNeck
    id  = uniqueGroups.indexOf("HeadNeck");
    var partHeadNeck = bodyView.selectAll("#pathHeadNeck")
@@ -2275,143 +2200,7 @@ function redrawAll()
         .attr("placeholder","输入RNA进行搜素，例如, A1BG");
     }
     redrawBodyViews();
-    
-   
 
-//     // update the body view
-//     var selectedData = g_tpmMeanVal[g_selectedRow];
-//     const bodyView = d3.select("#bodyView");
-//     var partHeadNeck = bodyView.selectAll("#pathHeadNeck")
-//     .style("fill", function(){
-//        var val = g_tpmMeanVal[g_selectedRow].HeadNeck;
-//        return g_exprValColorMap(val);
-//     })
-//     .style("opacity", "0.5")
-//     .on("mousemove", function(d) {
-//         tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
-//     })
-//     .on("mouseover", function(d) {
-//         if(g_isEnglish)
-//             tooltip.text(`HeadNeck: ${selectedData.HeadNeck}`);
-//         else
-//             tooltip.text(`头颈: ${selectedData.HeadNeck}`);
-//         tooltip.style("visibility", "visible");
-//     })
-//     .on("mouseout", function(d) {
-//         tooltip.style("visibility", "hidden");
-//     });
-
-//     var partExtremities = bodyView.selectAll("#pathExtremities")
-//     .style("fill", function(){
-//        var val = g_tpmMeanVal[g_selectedRow].Extremities;
-//        return g_exprValColorMap(val);
-//     })
-//     .style("opacity", "0.5")
-//     .on("mousemove", function(d) {
-//         tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
-//     })
-//     .on("mouseover", function(d) {
-//         if(g_isEnglish)
-//             tooltip.text(`Extremities: ${selectedData.Extremities}`);
-//         else
-//             tooltip.text(`四肢: ${selectedData.Extremities}`);
-//         tooltip.style("visibility", "visible");
-//     })
-//     .on("mouseout", function(d) {
-//         tooltip.style("visibility", "hidden");
-//     });
-//     // -------------------------------------------
-
-//     var partPerineum = bodyView.selectAll("#pathPerineum")
-//     .style("fill", function(){
-//        var val = g_tpmMeanVal[g_selectedRow].Perineum;
-//        return g_exprValColorMap(val);
-//     })
-//     .style("opacity", "0.5")
-//        // 把这一部分复制粘贴到其他部位即可
-//     .on("mousemove", function(d) {
-//         tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
-//     })
-//     .on("mouseover", function(d) {
-//         if(g_isEnglish)
-//             tooltip.text(`Perineum: ${selectedData.Perineum}`);
-//         else
-//             tooltip.text(`外阴: ${selectedData.Perineum}`);
-
-//         tooltip.style("visibility", "visible");
-//     })
-//     .on("mouseout", function(d) {
-//         tooltip.style("visibility", "hidden");
-//     });
-//     // -------------------------------------------
-
-
-//     var partBody = bodyView.selectAll("#pathBody")
-//     .style("fill", function(){
-//        var val = g_tpmMeanVal[g_selectedRow].Body;
-//        return g_exprValColorMap(val);
-//     })
-//     .style("opacity", "0.5")
-//     // 把这一部分复制粘贴到其他部位即可
-//     .on("mousemove", function(d) {
-//         tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
-//     })
-//     .on("mouseover", function(d) {
-//         if(g_isEnglish)
-//             tooltip.text(`Body: ${selectedData.Body}`);
-//         else
-//             tooltip.text(`躯干: ${selectedData.Body}`);
-
-//         tooltip.style("visibility", "visible");
-//     })
-//     .on("mouseout", function(d) {
-//         tooltip.style("visibility", "hidden");
-//     });
-//     // -------------------------------------------
-
-//     var partPalmSole = bodyView.selectAll("#pathPalmSole")
-//     .style("fill", function(){
-//        var val = g_tpmMeanVal[g_selectedRow].PalmSole;
-//        return g_exprValColorMap(val);
-//     })
-//     .style("opacity", "0.5")
-//     // 把这一部分复制粘贴到其他部位即可
-//     .on("mousemove", function(d) {
-//         tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
-//     })
-//     .on("mouseover", function(d) {
-//         if(g_isEnglish)
-//             tooltip.text(`PalmSole: ${selectedData.PalmSole}`);
-//         else
-//              tooltip.text(`掌跖: ${selectedData.PalmSole}`);
-
-//         tooltip.style("visibility", "visible");
-//     })
-//     .on("mouseout", function(d) {
-//         tooltip.style("visibility", "hidden");
-//     });
-
-//      // Update legends
-
-//      bodyView.selectAll(".legendLabels")
-//    .data(g_colormapThres)
-//    // .style("fill", function (d,i) { return gDefaultColRange(i); })
-//    .text(function (d, i) {
-//        //   var newStr = d.replace(/ *\（[^)]*\） */g, "");
-//        //    return newStr; 
-//        var thres = null;
-//        if (i < g_colormapThres.length - 1)
-//            thres = "[" + d + "," + g_colormapThres[i + 1] + ")";
-//        else {
-//            if (g_isEnglish)
-//                thres = "[" + d + ",+inf)";
-//            else
-//                thres = "[" + d + ",无穷)";
-//        }
-//        return thres;
-//    })
-//    .attr("text-anchor", "left")
-//    .style("alignment-baseline", "middle");
     // update the text 
     //    d3.select("#rnaInfoText")
     //    .text(function() {return g_tpmMeanVal[g_selectedRow].Symbol; });
@@ -2426,13 +2215,13 @@ function redrawAll()
     if (g_tpmFullData == [])
         return;
     d3.select(".dotplotSex").remove();
-    drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#barchartView",
+    drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#dotplotView",
         g_dpwidth, g_dpheight, g_margin);
 
     d3.selectAll(".dotplotageGroup").remove();
     // var ageGroupSubgroups = ['0_10', '11_20', '21_30', '31_40', '41_50', '51_60', '61_70', 'over70'];
     var ageGroupSubgroups = ['0-17', '18-39', 'over 40'];
-    drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotageGroup", "#dotplotView",
+    drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotageGroup", "#barchartView",
         g_dpwidth, g_dpheight, g_margin, ageGroupSubgroups, true, true);
 
     d3.selectAll(".linechartViewAge").remove();
@@ -2495,74 +2284,75 @@ function rnaViewerMain()
         redrawAll();
       });
 
+      var svg = d3.select('.progress')
+		.append('svg')
+		.attr('height', 100)
+		.attr('width', 500);
 
-    // 0. set up views  
-    // drawBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
-    // 0.load data
-    // d3.csv("./data/tpm_meanVal.csv", function(data)
-    // d3.csv("./data/tpm0612_meanVal.csv", function(data)
-    // {
-    //     for(var i = 0; i < data.length; i++)
-    //     {
-    //         data[i].symbol = data[i].symbol;
-    //         data[i].HeadNeck = +data[i].HeadNeck;
-    //         data[i].Body = +data[i].Extremities;
-    //         data[i].PalmSole = +data[i].PalmSole;
-    //         data[i].Perineum = +data[i].Perineum;
-    //     }
-    //     g_tpmMeanVal = data;
+	var states = ['started', 'inProgress', 'completed'],
+	    segmentWidth = 100,
+		currentState = 'started';
 
+	var colorScale = d3.scaleOrdinal()
+		.domain(states)
+		.range(['yellow', 'orange', 'green']);
 
+	svg.append('rect')
+		.attr('class', 'bg-rect')
+		.attr('rx', 10)
+		.attr('ry', 10)
+		.attr('fill', 'gray')
+		.attr('height', 15)
+		.attr('width', function(){
+			return segmentWidth * states.length;
+		})
+		.attr('x', 0);
 
-    //     if (searchedRNA != "A1BG" && searchedRNA != null)
-    //         doSearchFromProg(searchedRNA);
+	var progressBar = svg.append('rect')
+					.attr('class', 'progress-rect')
+					.attr('fill', function(){
+						return colorScale(currentState);
+					})
+					.attr('height', 15)
+					.attr('width', 0)
+					.attr('rx', 10)
+					.attr('ry', 10)
+					.attr('x', 0);
 
-    //     // // 1.setup views
-    //     // // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
-    //     // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
-    //     // // the second body view
-    //     // drawMaleBodyView(g_tpmMeanVal, "bodyMapM", "#bodyViewM", g_bvwidth, g_bvheight, g_margin);
+    progressBar.transition()
+        .duration(1000)
+        .attr('width', function () {
+            var index = states.indexOf(currentState);
+            return (index + 1) * segmentWidth;
+        });
 
-    //     // 2. setup search box
-    //     setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
-    //     // 2.1 setup drop box
-    //     // d3.select("#rnaDropbox")
-    //     // .selectAll('rnaOptions')
-    //     // .data(g_tpmMeanVal)
-    //     // .enter()
-    //     // .text(function (d) { return d.Symbol; }) // text showed in the menu
-    //     // .attr("value", function (d,i) { return i; }) // corresponding value returned by the button
-    //     // .property("selected", function(d){ return d.Symbol === g_tpmMeanVal[g_selectedRow]; });
-        
-    //     // 3. setup barchart
-    //     // drawBarcharts(g_tpmMeanVal, g_selectedRow, "barchart", "#barchartView", g_dpwidth, g_dpheight, g_margin);
-       
-    //     // draw dotplots?
-    //     // drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplot", "#barchartView", 
-    //     // g_dpwidth, g_dpheight, g_margin);
-    // });
-    // d3.queue()
-    // .defer(d3.csv, "./data/subjectinfo_0718.csv") // records subject information
-    // .defer(d3.csv, "./data/region_group.csv")
-    // .await(function(error, data1, data2){
-    //     if(error) throw error;
-    //     g_tpmSubInfo = data1;
-    //     for(var i = 0; i < data2.length; i++){
-    //         for(var j = 0; j < g_tpmSubInfo.length; j++){
-    //             if(g_tpmSubInfo[j].id === data2[i].id){
-    //                 g_tpmSubInfo[j].location = data2[i].regiongroup;
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     console.log(g_tpmSubInfo);
-    // });
-    // 4. load the full data
- d3.queue()
+    // load all necessary files and set global variables!
+    var loadProgress = 0;
+
+    d3.queue()
     // .defer(d3.csv, "./data/tpm_full.csv")
     // .defer(d3.csv, "./data/TPM0612.csv")
-    // .defer(d3.csv, "./data/TPM_159.csv") // records RNA info
-    .defer(d3.csv, "./data/tpm_159_test.csv") // records RNA info
+    .defer(d3.csv, "./data/TPM_159.csv") // records RNA info
+    // .defer(function(){
+    //     d3.csv("./data/TPM_159.csv")
+    //     .on("progress", function(d) {
+    //         var i = d3.interpolate(loadProgress, d.loaded / d.total);
+    //         d3.transition().tween("progress", function () {
+    //             state = "inProgress";
+    //             return function (t) {
+    //                 loadProgress = i(t);
+    //                 progressBar.transition()
+    //                     .attr('fill', function () {
+    //                         return colorScale(state);
+    //                     })
+    //                     .attr('width', function () {
+    //                         // var index = states.indexOf(state);
+    //                         return (loadProgress) * 3 * segmentWidth; // the multiplier 3 makes the complete width of the progress bar
+    //                     });
+    //             };
+    //         });
+    //     })
+    // }) // records RNA info
     .defer(d3.csv, "./data/subjectinfo_0718.csv") // records subject information
     // .defer(d3.csv, "./data/subjectInfo_new.csv")
     .defer(d3.csv, "./data/tpm0612_meanVal.csv")
@@ -2572,6 +2362,7 @@ function rnaViewerMain()
 
         // Handle the full tpm
         var valueKey = data1.columns;
+        console.log(data1.length);
         data1.forEach(function(d) {
             for(var i = 0; i < valueKey.length; i++)
             {
@@ -2582,6 +2373,7 @@ function rnaViewerMain()
             }
         });
         g_tpmFullData = data1;
+      
         // Handle the subject information
         g_tpmSubInfo = data2;
         
@@ -2607,23 +2399,11 @@ function rnaViewerMain()
             }
         }
         console.log(g_posNames);
-        // console.log(g_tpmSubInfo);
-
-        // 0. Prepare the search bar with a default term
-        if (searchedRNA != "A1BG" && searchedRNA != null)
-            doSearchFromProg(searchedRNA);
-
-        
-
-        // // 1.setup views
-        // // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
-        // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
-        // // the second body view
-        // drawMaleBodyView(g_tpmMeanVal, "bodyMapM", "#bodyViewM", g_bvwidth, g_bvheight, g_margin);
+        console.log("all files loaded!");
 
         // 2. setup search box
         setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
-       // 1.setup views
+        // 1.setup views
         // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
         drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
         // the second body view
@@ -2632,15 +2412,174 @@ function rnaViewerMain()
 
         // draw the dotplot
         // var ageGroupSubgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
-        var ageGroupSubgroups = ['0-17', '18-39','over 40'];
-        drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotageGroup", "#dotplotView", 
-        g_dpwidth, g_dpheight, g_margin, ageGroupSubgroups, true, true);
+        var ageGroupSubgroups = ['0-17', '18-39', 'over 40'];
+        drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotageGroup", "#barchartView",
+            g_dpwidth, g_dpheight, g_margin, ageGroupSubgroups, true, true);
 
-        drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#barchartView", 
-        g_dpwidth, g_dpheight, g_margin);
+        drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#dotplotView",
+            g_dpwidth, g_dpheight, g_margin);
 
-        drawLinechart(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "linechartViewAge", "#linechartView", 
-        g_dpwidth, g_dpheight, g_margin);
+        drawLinechart(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "linechartViewAge", "#linechartView",
+            g_dpwidth, g_dpheight, g_margin);
 
-    })
+    });
+
+    // loadFileProgress();
+    // // assume that the full tpm file is loaded!
+    // if(g_tpmFullData.length != 0)
+    // {
+    //     d3.queue()
+    //     // .defer(d3.csv, "./data/tpm_full.csv")
+    //     // .defer(d3.csv, "./data/TPM0612.csv")
+    //     // .defer(d3.csv, "./data/TPM_159.csv") // records RNA info
+    //     // .defer(d3.csv, "./data/tpm_159_test.csv") // records RNA info
+    //     .defer(d3.csv, "./data/subjectinfo_0718.csv") // records subject information
+    //     // .defer(d3.csv, "./data/subjectInfo_new.csv")
+    //     .defer(d3.csv, "./data/tpm0612_meanVal.csv")
+    //     .defer(d3.csv, "./data/region_group.csv")// records the location information
+    //     .await(function(error, data1, data2, data3){
+    //         if(error) throw error;
+    
+    //         // Handle the subject information
+    //         g_tpmSubInfo = data1;
+            
+    //         for(var i = 0; i < data2.length; i++)
+    //         {
+    //             data2[i].symbol = data2[i].symbol;
+    //             data2[i].HeadNeck = +data2[i].HeadNeck;
+    //             data2[i].Body = +data2[i].Body;
+    //             data2[i].PalmSole = +data2[i].PalmSole;
+    //             data2[i].Perineum = +data2[i].Perineum;
+    //         }
+    //         g_tpmMeanVal = data2;
+            
+    //         // connect subject Id with its sample location
+    //         for(var i = 0; i < data3.length; i++){
+    //             for(var j = 0; j < g_tpmSubInfo.length; j++){
+    //                 if(g_tpmSubInfo[j].id === data3[i].id){
+    //                     g_tpmSubInfo[j].location = data3[i].regiongroup;
+    //                     if(g_posNames.indexOf(data3[i].regiongroup) == -1)
+    //                         g_posNames.push(data3[i].regiongroup);
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //         console.log(g_posNames);
+    //         // console.log(g_tpmSubInfo);
+    
+    //         // 0. Prepare the search bar with a default term
+    //         if (searchedRNA != "A1BG" && searchedRNA != null)
+    //             doSearchFromProg(searchedRNA);
+    
+            
+    
+    //         // // 1.setup views
+    //         // // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+    //         // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+    //         // // the second body view
+    //         // drawMaleBodyView(g_tpmMeanVal, "bodyMapM", "#bodyViewM", g_bvwidth, g_bvheight, g_margin);
+    
+    //         // 2. setup search box
+    //         setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
+    //        // 1.setup views
+    //         // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+    //         drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+    //         // the second body view
+    //         drawMaleBodyView(g_tpmMeanVal, "bodyMapM", "#bodyViewM", g_bvwidth, g_bvheight, g_margin);
+    
+    
+    //         // draw the dotplot
+    //         // var ageGroupSubgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
+    //         var ageGroupSubgroups = ['0-17', '18-39','over 40'];
+    //         drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotageGroup", "#barchartView", 
+    //         g_dpwidth, g_dpheight, g_margin, ageGroupSubgroups, true, true);
+    
+    //         drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#dotplotView", 
+    //         g_dpwidth, g_dpheight, g_margin);
+    
+    //         drawLinechart(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "linechartViewAge", "#linechartView", 
+    //         g_dpwidth, g_dpheight, g_margin);
+    
+    //     })
+    // }
+    // else{
+    //     d3.queue()
+    //     // .defer(d3.csv, "./data/tpm_full.csv")
+    //     // .defer(d3.csv, "./data/TPM0612.csv")
+    //     // .defer(d3.csv, "./data/TPM_159.csv") // records RNA info
+    //     .defer(d3.csv, "./data/tpm_159_test.csv") // records RNA info
+    //     .defer(d3.csv, "./data/subjectinfo_0718.csv") // records subject information
+    //     // .defer(d3.csv, "./data/subjectInfo_new.csv")
+    //     .defer(d3.csv, "./data/tpm0612_meanVal.csv")
+    //     .defer(d3.csv, "./data/region_group.csv")// records the location information
+    //     .await(function(error, data1, data2, data3, data4){
+    //         if(error) throw error;
+
+    //         var valueKey = data1.columns;
+    //         data.forEach(function(d) {
+    //             for(var i = 0; i < valueKey.length; i++)
+    //             {
+    //                 if(valueKey[i] === "Symbol" )
+    //                      d[valueKey[i]] = d[valueKey[i]];
+    //                 else
+    //                     d[valueKey[i]] = +d[valueKey[i]];
+    //             }
+    //         });
+    //         g_tpmFullData = data1;
+    
+    //         // Handle the subject information
+    //         g_tpmSubInfo = data2;
+            
+    //         for(var i = 0; i < data3.length; i++)
+    //         {
+    //             data3[i].symbol = data3[i].symbol;
+    //             data3[i].HeadNeck = +data3[i].HeadNeck;
+    //             data3[i].Body = +data3[i].Body;
+    //             data3[i].PalmSole = +data3[i].PalmSole;
+    //             data3[i].Perineum = +data3[i].Perineum;
+    //         }
+    //         g_tpmMeanVal = data3;
+            
+    //         // connect subject Id with its sample location
+    //         for(var i = 0; i < data4.length; i++){
+    //             for(var j = 0; j < g_tpmSubInfo.length; j++){
+    //                 if(g_tpmSubInfo[j].id === data4[i].id){
+    //                     g_tpmSubInfo[j].location = data4[i].regiongroup;
+    //                     if(g_posNames.indexOf(data4[i].regiongroup) == -1)
+    //                         g_posNames.push(data4[i].regiongroup);
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //         console.log(g_posNames);
+    //         // console.log(g_tpmSubInfo);
+    
+    //         // 0. Prepare the search bar with a default term
+    //         if (searchedRNA != "A1BG" && searchedRNA != null)
+    //             doSearchFromProg(searchedRNA);
+    
+    //         // 2. setup search box
+    //         setupSearchView(g_tpmMeanVal, "searchArea", "#rnaSearchBox", g_bvwidth, g_bvheight, g_margin);
+    //        // 1.setup views
+    //         // drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+    //         drawFemaleBodyView(g_tpmMeanVal, "bodyMap", "#bodyView", g_bvwidth, g_bvheight, g_margin);
+    //         // the second body view
+    //         drawMaleBodyView(g_tpmMeanVal, "bodyMapM", "#bodyViewM", g_bvwidth, g_bvheight, g_margin);
+    
+    
+    //         // draw the dotplot
+    //         // var ageGroupSubgroups = ['0_10','11_20','21_30','31_40','41_50','51_60','61_70','over70'];
+    //         var ageGroupSubgroups = ['0-17', '18-39','over 40'];
+    //         drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotageGroup", "#barchartView", 
+    //         g_dpwidth, g_dpheight, g_margin, ageGroupSubgroups, true, true);
+    
+    //         drawDotplots(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "dotplotSex", "#dotplotView", 
+    //         g_dpwidth, g_dpheight, g_margin);
+    
+    //         drawLinechart(g_tpmFullData[g_selectedRow], g_tpmSubInfo, "linechartViewAge", "#linechartView", 
+    //         g_dpwidth, g_dpheight, g_margin);
+    
+    //     })
+    // }
+
 }

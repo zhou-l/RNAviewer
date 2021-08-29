@@ -7,6 +7,7 @@
 <title>Skin RNA Viewer</title>
 <link rel="stylesheet" href="w3.css">
 <script src="d3.v4.min.js"></script>
+<script src="myGlobalVars.js"></script>
 <!-- <script src="welcome.js"></script> -->
 <!-- <script src="image-outline-min.js"></script>
 <script src="require.js"></script> -->
@@ -151,26 +152,29 @@
 		}
 	</style>
 
-	<div id="VAcanvas" class=" w3-content w3-mobile  " style=" height:1600px;width:1200px">
+	<div id="VAcanvas" class=" w3-content w3-mobile  " style=" height: 800px;;width:1200px">
 		<!-- <div class = "w3-cell-row"> -->
+			<div class="row">
 
-
+				<div id="fileLoadProgressBar" class="progress"></div>
+			</div>
 		<div class="row">
+
 			<div id="rnaInfoArea" class=" w3-container w3-cell column" style="width:500px;height:300px;">
                 <div class = "input-group" id="quick_search">
                     <input id="welcomePage_rnaSearchBox" placeholder="输入RNA进行搜素，例如, A1BG"
-					style="width:400px;position:absolute;top:150px;"></input>
+					style="width:400px;position:relative;top:30px"></input>
                     <span>
                         <!-- <a href="./RNAviewer_main.html" id="welcomePage_rnaSearchButton" style="position:relative;left:420px"> -->
                         <button id="welcomePage_rnaSearchButton" style="position:relative;left:420px">
-                            Search
+                            Load file and search
 
                         </button>
                         <!-- </a> -->
                     </span>
                 </div>
 			</div>
-            <div id="projInfo" class=" w3-container w3-cell column" style="width:400px;height:600px;">
+            <div id="projInfo" class=" w3-container w3-cell column" style="width:400px;height:300px;">
 				本网站旨在向公众及科研人员提供开放性的渠道，用以查询、调取人体不同部位皮肤的转录组学信息。我们将人体皮肤分为头颈部、躯干部、四肢部（包含掌跖会阴）3个大区，并特别划分足跖部、会阴部。
 				网站数据基于对来自近200个人体正常皮肤全层组织的Bulk-RNA测序结果。
             </div>
@@ -194,6 +198,9 @@
 </body>
 
 <script src="welcomePage.js"></script>
+<script src="rnaViewer.js"></script>
 <script>
+
 	rnaWelcomePage();
+	// loadFileProgress();
 </script>
